@@ -9,4 +9,5 @@ Gets the original functions and calculates a score based on how often the functi
 
 # Things to contemplate 
 - Should we only count commits with 'fix' or 'bug' etc. in the message
+- What files and functions should we exclude
 - Expand to all of the Repositories 
