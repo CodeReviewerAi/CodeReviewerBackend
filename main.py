@@ -9,6 +9,7 @@ import time
 import os
 import re
 import json
+import hashlib
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -30,9 +31,24 @@ def fetch_all_commits(repo_api_url, headers):
             raise Exception(f'Failed to fetch commits: {response.status_code}')
     return commits
 
-def analyze_commit_for_js_changes(commit_url, headers):
+def extract_function_bodies_from_file(file_content):
+    """ Extract entire function bodies from JavaScript file content """
+    function_bodies = {}
+    # Matches the start of the function and captures until the closing brace
+    pattern = r'function\s+(\w+)\s*\(.*?\)\s*\{([\s\S]*?\n\})'
+    matches = re.findall(pattern, file_content)
+
+    for name, body in matches:
+        # Create a hash of the function body
+        hash_digest = hashlib.md5(body.encode()).hexdigest()
+        function_bodies[name] = hash_digest
+
+    return function_bodies
+
+def analyze_commit_for_js_changes(commit_url, headers, prev_commit_functions={}):
     """ Analyze a specific commit for changes in JavaScript functions """
     function_changes = {}
+    current_functions = {}  # Initialize current_functions
     attempt = 0
     max_attempts = 5
 
@@ -43,47 +59,45 @@ def analyze_commit_for_js_changes(commit_url, headers):
                 commit_data = response.json()
                 for file in commit_data.get('files', []):
                     if file['filename'].endswith('.js'):
-                        patch = file.get('patch', '')
-                        functions_changed = extract_functions_from_patch(patch)
-                        for func in functions_changed:
-                            function_changes[func] = function_changes.get(func, 0) + 1
-                return function_changes
+                        raw_url = file.get('raw_url', '')
+                        file_content = requests.get(raw_url, headers=headers).text
+                        current_functions = extract_function_bodies_from_file(file_content)
+                        for func, hash_val in current_functions.items():
+                            if func not in prev_commit_functions or prev_commit_functions[func] != hash_val:
+                                function_changes[func] = function_changes.get(func, 0) + 1
             else:
                 raise Exception(f'Failed to fetch commit details: {response.status_code}')
         except requests.exceptions.RequestException as e:
             attempt += 1
-            time.sleep(2 ** attempt)  # Exponential backoff
+            time.sleep(2 ** attempt)
             print(f"Retrying ({attempt}/{max_attempts}) due to error: {e}")
 
-    raise Exception("Max retries reached")
-
-def extract_functions_from_patch(patch):
-    """ Extract function names from a commit patch """
-    function_names = set()
-    pattern = r'\+function (\w+)\s*\('
-    matches = re.findall(pattern, patch)
-    for match in matches:
-        function_names.add(match)
-    return function_names
+    return function_changes, current_functions  # Return statement outside the try-except block
 
 def main():
     token = os.getenv('GITHUB_TOKEN')
     headers = {'Authorization': f'token {token}'} if token else {}
 
-    repo_api_url = 'https://api.github.com/repos/hlxsites/bitdefender'
+    repo_api_url = 'https://api.github.com/repos/hlxsites/walgreens'
 
     try:
         commits = fetch_all_commits(repo_api_url, headers)
         overall_function_changes = {}
+        prev_commit_functions = {}
 
         for commit in commits:
             commit_url = commit['url']
-            function_changes = analyze_commit_for_js_changes(commit_url, headers)
+            function_changes, current_functions = analyze_commit_for_js_changes(commit_url, headers, prev_commit_functions)
+            prev_commit_functions = current_functions
             for func, count in function_changes.items():
                 overall_function_changes[func] = overall_function_changes.get(func, 0) + count
-                print(f"Function {func} changed {count} times")
 
-        # Convert the result to JSON and write to a file
+            # Print the changes for this commit
+            print(f"Commit {commit['sha']}:")
+            for func, count in function_changes.items():
+                print(f"  - Function {func} changed {count} times")
+
+        # After processing all commits, write the overall results to a file
         with open('function_changes.json', 'w') as file:
             json.dump(overall_function_changes, file, indent=4)
 
