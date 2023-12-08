@@ -1,3 +1,13 @@
+"""
+How to improve this Code:
+1. Account for functions that are renamed
+2. Account for functions with the same name but different bodies
+3. Filter comment and whitespace changes
+4. Start increasing the number of commits only after the first merge commit
+5. Use a more sophisticated hashing algorithm
+6. Use a more sophisticated regular expression to match functions
+7. Add more tests
+"""
 import subprocess
 import re
 from hashlib import sha256
