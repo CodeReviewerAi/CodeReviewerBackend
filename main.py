@@ -59,7 +59,7 @@ def analyze_commits(repo_path, commits):
     return function_changes
 
 def main():
-    repo_path = './inputData/walgreens'
+    repo_path = './inputData/testRepository'
     commits = get_js_commits(repo_path)
     function_changes = analyze_commits(repo_path, commits)
 
