@@ -1,0 +1,3 @@
+{
+    "function": "logHelloWord() { console.log('Hello World'); }"
+}
