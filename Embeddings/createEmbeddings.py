@@ -4,10 +4,12 @@ import json
 import os
 import random
 import dotenv
-from qdrant_client import models, QdrantClient
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams, Record
 
 # Initialize Qdrant Client
-qdrant_client = QdrantClient(host='localhost', port=6333)  # Adjust host and port as necessary
+client = QdrantClient(host='localhost', port=6333)
+# client = QdrantClient(":memory:")
 
 # Set the OpenAI API key using the environment variable
 dotenv.load_dotenv()
@@ -21,14 +23,11 @@ with open(json_file_path, 'r') as file:
 # Specify the embedding model
 model = "text-embedding-ada-002"
 
-# Initialize the Qdrant client
-dimension_vector = 1536
-qdrant = QdrantClient(":memory:")
-qdrant.recreate_collection(
+client.recreate_collection(
     collection_name="functions",
-    vectors_config=models.VectorParams(
-        size=dimension_vector,
-        distance=models.Distance.COSINE,
+    vectors_config=VectorParams(
+        size=1536,
+        distance=Distance.COSINE,
     ),
 )
 
@@ -53,8 +52,6 @@ for function_name, function_data in list(json_data.items())[:5]: # Limit to 5 fu
     )
     embedding = response.json()['data'][0]['embedding']
 
-
-
     #create the random id
     id = random.randint(0,1000000)
 
@@ -65,11 +62,11 @@ for function_name, function_data in list(json_data.items())[:5]: # Limit to 5 fu
     }
 
     # Add the embedding to Qdrant
-    qdrant.upload_records(
+    client.upload_records(
         collection_name="functions",
         records=[
-            models.Record(
-                id=id, 
+            Record(
+                id=id,
                 vector=embedding,
                 payload=payload
             )

@@ -1,3 +1,4 @@
 .env
 function_changes.json
 path
+.DS_Store
