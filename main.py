@@ -1,79 +1,61 @@
-"""
-How to improve this Code:
-1. Account for functions that are renamed
-2. Account for functions with the same name but different bodies
-3. Filter comment and whitespace changes
-4. Start increasing the number of commits only after the first merge commit
-5. Use a more sophisticated hashing algorithm
-6. Use a more sophisticated regular expression to match function declarations and bodies
-7. Add more tests
-8. Write the full function along with the commit into a json file
-"""
-import subprocess
-import re
+import git
 import json
-from hashlib import sha256
+import re
 
-def get_js_commits(repo_path):
-    command = ["git", "-C", repo_path, "log", "--pretty=format:%H", "--", "*.js"]
-    result = subprocess.run(command, stdout=subprocess.PIPE, text=True)
-    return result.stdout.strip().split('\n')
+# Path to your repository
+repo_path = '../inputData/testRepo2'
+repo = git.Repo(repo_path)
 
-def get_commit_diff(repo_path, commit_hash):
-    command = ["git", "-C", repo_path, "show", commit_hash, "--", "*.js"]
-    result = subprocess.run(command, stdout=subprocess.PIPE, text=True)
-    return result.stdout
+merge_commits = [commit for commit in repo.iter_commits('main') if commit.parents and len(commit.parents) > 1]
+merge_commits.reverse() # Reverse the list to get the oldest merge commit first 
 
-def extract_functions(diff):
-    # Regular expression to match the function declarations and bodies in the format: 'function <name>(<args>) {<body>}'
-    function_regex = r"function\s+([a-zA-Z_$][0-9a-zA-Z_$]*)\s*\([^)]*\)\s*\{[\s\S]*?\}"
-    return re.findall(function_regex, diff)
+def extract_js_functions(diff):
+    # Regular expression to match JavaScript function declarations
+    # This regex can be adjusted based on the specifics of the codebase
+    pattern = re.compile(r'function\s+(\w+)\s*\((.*?)\)\s*\{([\s\S]*?)\}', re.MULTILINE)
+    return pattern.findall(diff)
 
-def hash_function_body(function_body):
-    return sha256(function_body.encode('utf-8')).hexdigest()
+def get_full_function_at_commit(repo, commit_hash, function_name, file_path):
+    # Get the commit object
+    commit = repo.commit(commit_hash)
 
-def analyze_commits(repo_path, commits):
-    function_changes = {}
+    # Find the file in the commit tree
+    for blob in commit.tree.traverse():
+        if blob.path == file_path:
+            # Read the file content
+            file_content = blob.data_stream.read().decode('utf-8')
 
-    for commit in reversed(commits):  # Reverse the commit list to start from the earliest commit
-        diff = get_commit_diff(repo_path, commit)
-        functions = extract_functions(diff)
+            # Regular expression to match the specific function
+            pattern = re.compile(r'function\s+' + re.escape(function_name) + r'\s*\((.*?)\)\s*\{([\s\S]*?)\}', re.MULTILINE)
+            match = pattern.search(file_content)
 
-        for function_name in functions:
-            full_function = 'function ' + function_name + diff.split(function_name)[1].split('}')[0] + '}'
+            if match:
+                return {'args': match.group(1), 'body': match.group(2)}
 
-            function_hash = hash_function_body(full_function)
+    print(f"Function '{function_name}' not found in commit '{commit_hash}'")
+    return None
 
-            if function_name not in function_changes:
-                # Store the first version of the function and initialize the count and hash set
-                function_changes[function_name] = {
-                    'count': 0,
-                    'hashes': set(),
-                    'first_version': full_function  # Store the first version of the function
-                }
 
-            if function_hash not in function_changes[function_name]['hashes']:
-                function_changes[function_name]['count'] += 1
-                function_changes[function_name]['hashes'].add(function_hash)
+functions = {}
 
-    return function_changes
+for commit in merge_commits:
+    parent_commit = commit.parents[0]
+    diffs = commit.diff(parent_commit, create_patch=True)
 
-def main():
-    repo_path = '../inputData/testRepo2'
-    commits = get_js_commits(repo_path)
-    print(commits)
-    function_changes = analyze_commits(repo_path, commits)
+    print(f"Commit: {commit.hexsha}")
+    for diff in diffs:
+        print(f"File: {diff.a_path} (Change Type: {diff.change_type})")
+        diff_content = diff.diff.decode('utf-8')
+        for func_name, _, _ in extract_js_functions(diff_content):
+            if func_name not in functions:
+                full_function = get_full_function_at_commit(repo, commit.hexsha, func_name, diff.a_path)
+                if full_function:
+                    functions[func_name] = {'args': full_function['args'], 'body': full_function['body'], 'commit': commit.hexsha}
+                    print(f"Function '{func_name}' captured from merge commit.")
 
-    # Prepare data for JSON output
-    output_data = {function_name: {'count': data['count'], 'first_version': data['first_version']}
-                   for function_name, data in function_changes.items()}
+    print("\n")
 
-    # Write to JSON file
-    with open('./outputData/function_changes.json', 'w') as json_file:
-        json.dump(output_data, json_file, indent=4)
+# Save the functions into a file called 'function_changes.json' in ./outputData
+with open('./outputData/function_changes.json', 'w') as fp:
+    json.dump(functions, fp, indent=4)
 
-    for function_name, data in function_changes.items():
-        print(f"Function '{function_name}' changed {data['count']} times")
-
-if __name__ == "__main__":
-    main()
