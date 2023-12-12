@@ -11,7 +11,6 @@ merge_commits.reverse() # Reverse the list to get the oldest merge commit first
 
 def extract_js_functions(diff):
     # Regular expression to match JavaScript function declarations
-    # This regex can be adjusted based on the specifics of the codebase
     pattern = re.compile(r'function\s+(\w+)\s*\((.*?)\)\s*\{([\s\S]*?)\}', re.MULTILINE)
     return pattern.findall(diff)
 
@@ -30,11 +29,12 @@ def get_full_function_at_commit(repo, commit_hash, function_name, file_path):
             match = pattern.search(file_content)
 
             if match:
-                return {'args': match.group(1), 'body': match.group(2)}
+                # Construct the full function declaration
+                full_function = f"function {function_name}({match.group(1)}) {{{match.group(2)}}}"
+                return full_function
 
     print(f"Function '{function_name}' not found in commit '{commit_hash}'")
     return None
-
 
 functions = {}
 
@@ -50,7 +50,7 @@ for commit in merge_commits:
             if func_name not in functions:
                 full_function = get_full_function_at_commit(repo, commit.hexsha, func_name, diff.a_path)
                 if full_function:
-                    functions[func_name] = {'args': full_function['args'], 'body': full_function['body'], 'commit': commit.hexsha}
+                    functions[func_name] = {'function': full_function, 'commit': commit.hexsha}
                     print(f"Function '{func_name}' captured from merge commit.")
 
     print("\n")
@@ -58,4 +58,3 @@ for commit in merge_commits:
 # Save the functions into a file called 'function_changes.json' in ./outputData
 with open('./outputData/function_changes.json', 'w') as fp:
     json.dump(functions, fp, indent=4)
-
