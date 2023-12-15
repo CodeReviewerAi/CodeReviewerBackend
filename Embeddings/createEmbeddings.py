@@ -16,7 +16,7 @@ dotenv.load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Load the JSON data from the file
-json_file_path = '../outputData/function_changes.json'
+json_file_path = 'outputData/function_changes.json' # depends on how you run the file, should be changed to be global and not local path
 with open(json_file_path, 'r') as file:
     json_data = json.load(file)
 
@@ -33,7 +33,7 @@ client.recreate_collection(
 
 # Process each function in the JSON data
 for function_name, function_data in list(json_data.items())[:5]: # Limit to 5 functions for testing should be #for function_name, function_data in json_data.items():
-    input_text = function_data['first_version']
+    input_text = function_data['merged_function']
 
     # Create the data for the POST request
     data = {
@@ -58,7 +58,7 @@ for function_name, function_data in list(json_data.items())[:5]: # Limit to 5 fu
     # create the payload
     payload = {
         "function_name": function_name,
-        "score": function_data['count'],
+        "score": function_data['changes_after_merge'],
     }
 
     # Add the embedding to Qdrant
