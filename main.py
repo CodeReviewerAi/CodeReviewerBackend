@@ -1,79 +1,72 @@
-"""
-How to improve this Code:
-1. Account for functions that are renamed
-2. Account for functions with the same name but different bodies
-3. Filter comment and whitespace changes
-4. Start increasing the number of commits only after the first merge commit
-5. Use a more sophisticated hashing algorithm
-6. Use a more sophisticated regular expression to match function declarations and bodies
-7. Add more tests
-8. Write the full function along with the commit into a json file
-"""
-import subprocess
-import re
+import git
 import json
-from hashlib import sha256
+import re
 
-def get_js_commits(repo_path):
-    command = ["git", "-C", repo_path, "log", "--pretty=format:%H", "--", "*.js"]
-    result = subprocess.run(command, stdout=subprocess.PIPE, text=True)
-    return result.stdout.strip().split('\n')
 
-def get_commit_diff(repo_path, commit_hash):
-    command = ["git", "-C", repo_path, "show", commit_hash, "--", "*.js"]
-    result = subprocess.run(command, stdout=subprocess.PIPE, text=True)
-    return result.stdout
+# Path to your repository
+repo_path = 'inputData/testRepo2'
+repo = git.Repo(repo_path)
 
-def extract_functions(diff):
-    # Regular expression to match the function declarations and bodies in the format: 'function <name>(<args>) {<body>}'
-    function_regex = r"function\s+([a-zA-Z_$][0-9a-zA-Z_$]*)\s*\([^)]*\)\s*\{[\s\S]*?\}"
-    return re.findall(function_regex, diff)
+merge_commits = [commit for commit in repo.iter_commits('main') if commit.parents and len(commit.parents) > 1]
+merge_commits.reverse()  # Reverse the list to get the oldest merge commit first
 
-def hash_function_body(function_body):
-    return sha256(function_body.encode('utf-8')).hexdigest()
+def get_func_name(diff):
+    pattern = re.compile(r'function\s+(\w+)\s*\((.*?)\)\s*\{([\s\S]*?)\}', re.MULTILINE)
+    return pattern.findall(diff)
 
-def analyze_commits(repo_path, commits):
-    function_changes = {}
+def get_full_function_at_commit(repo, commit_hash, function_name, file_path): 
+    commit = repo.commit(commit_hash)
+    blob = commit.tree / file_path
+    file_content = blob.data_stream.read().decode('utf-8')
 
-    for commit in reversed(commits):  # Reverse the commit list to start from the earliest commit
-        diff = get_commit_diff(repo_path, commit)
-        functions = extract_functions(diff)
+    pattern = re.compile(r'function\s+' + re.escape(function_name) + r'\s*\((.*?)\)\s*\{([\s\S]*?)\}', re.MULTILINE)
+    match = pattern.search(file_content)
 
-        for function_name in functions:
-            full_function = 'function ' + function_name + diff.split(function_name)[1].split('}')[0] + '}'
+    if match:
+        full_function = f"function {function_name}({match.group(1)}) {{{match.group(2)}}}"
+        return full_function
 
-            function_hash = hash_function_body(full_function)
+    return None
 
-            if function_name not in function_changes:
-                # Store the first version of the function and initialize the count and hash set
-                function_changes[function_name] = {
-                    'count': 0,
-                    'hashes': set(),
-                    'first_version': full_function  # Store the first version of the function
-                }
+functions = {}
 
-            if function_hash not in function_changes[function_name]['hashes']:
-                function_changes[function_name]['count'] += 1
-                function_changes[function_name]['hashes'].add(function_hash)
+for commit in merge_commits:
+    parent_commit = commit.parents[0]
+    diffs = commit.diff(parent_commit, create_patch=True)
 
-    return function_changes
+    for diff in diffs:
+        diff_content = diff.diff.decode('utf-8')
+        for func_name, _, _ in get_func_name(diff_content):
+            full_function = get_full_function_at_commit(repo, commit.hexsha, func_name, diff.a_path)
+            if full_function:
+                if func_name not in functions:
+                    functions[func_name] = {
+                        'merged_function': full_function,
+                        'commit': commit.hexsha,
+                        'changes_after_merge': 0,
+                        'latest_function': full_function,
+                        'time_first_merged': commit.authored_datetime,
+                        'file_path': diff.a_path  # Store file path here
+                    }
 
-def main():
-    repo_path = '../inputData/testRepo2'
-    commits = get_js_commits(repo_path)
-    print(commits)
-    function_changes = analyze_commits(repo_path, commits)
+for func_name, func_info in functions.items():
+    for commit in repo.iter_commits('main', reverse=True):  # Iterate from the oldest to newest
+        if commit.authored_datetime > func_info['time_first_merged']:
+            try:
+                blob = commit.tree / func_info['file_path']
+                file_content = blob.data_stream.read().decode('utf-8')
+                new_content = get_full_function_at_commit(repo, commit.hexsha, func_name, func_info['file_path'])
+                if new_content and new_content.strip() != func_info['latest_function'].strip():
+                    func_info['changes_after_merge'] += 1
+                    func_info['latest_function'] = new_content
+                    print(f"Function '{func_name}' changed at commit {commit.hexsha}")
+            except KeyError:
+                continue
 
-    # Prepare data for JSON output
-    output_data = {function_name: {'count': data['count'], 'first_version': data['first_version']}
-                   for function_name, data in function_changes.items()}
+# Convert datetime objects to string before saving
+for func in functions.values():
+    func['time_first_merged'] = func['time_first_merged'].isoformat()
 
-    # Write to JSON file
-    with open('./outputData/function_changes.json', 'w') as json_file:
-        json.dump(output_data, json_file, indent=4)
-
-    for function_name, data in function_changes.items():
-        print(f"Function '{function_name}' changed {data['count']} times")
-
-if __name__ == "__main__":
-    main()
+# Save the functions and their change counts into a file
+with open('functionRetriever/outputData/function_changes.json', 'w') as fp:
+    json.dump(functions, fp, indent=4)

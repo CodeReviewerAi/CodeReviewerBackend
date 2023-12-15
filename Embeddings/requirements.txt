@@ -1,4 +1,0 @@
-openai
-dotenv
-qdrant_client
-requests
