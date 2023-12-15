@@ -10,7 +10,7 @@ dotenv.load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def embedUserInput():
-    Json_path = './inputFunction.json'
+    Json_path = 'userInput/inputFunction.json'
     with open(Json_path, 'r') as file:
         json_data = json.load(file)
 
