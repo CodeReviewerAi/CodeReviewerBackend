@@ -1,4 +1,5 @@
 .env
-function_changes.json
+**.json
 path
 .DS_Store
+**/__pycache__
