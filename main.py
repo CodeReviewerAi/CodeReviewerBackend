@@ -1,7 +1,7 @@
 import git
 import json
 import re
-from datetime import datetime
+
 
 # Path to your repository
 repo_path = 'inputData/testRepo2'
