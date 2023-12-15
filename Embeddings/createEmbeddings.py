@@ -16,7 +16,7 @@ dotenv.load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Load the JSON data from the file
-json_file_path = '../outputData/function_changes.json'
+json_file_path = 'outputData/function_changes.json' # depends on how you run the file, should be changed to be global and not local path
 with open(json_file_path, 'r') as file:
     json_data = json.load(file)
 

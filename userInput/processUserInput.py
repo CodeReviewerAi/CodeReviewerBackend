@@ -21,7 +21,7 @@ def embedUserInput():
         "input": input_text,
         "model": model
     }
-
+    # standard Opeanai call
     response = requests.post(
         'https://api.openai.com/v1/embeddings',
         headers={
@@ -61,9 +61,9 @@ def performKNNSearch(embedding, k=5):
         score = payload['score'] if 'score' in payload else 0
         total_score += score
 
-    average_score = total_score / k if k > 0 else 0
+    average_score = total_score / k 
 
     return average_score
 
 embed = embedUserInput()
-print(performKNNSearch(embed))
+print('Average Score:', performKNNSearch(embed))
