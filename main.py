@@ -4,7 +4,7 @@ import re
 
 
 # Path to your repository
-repo_path = 'inputData/testRepo2'
+repo_path = '../inputData/testRepo2'
 repo = git.Repo(repo_path)
 
 merge_commits = [commit for commit in repo.iter_commits('main') if commit.parents and len(commit.parents) > 1]
@@ -68,5 +68,5 @@ for func in functions.values():
     func['time_first_merged'] = func['time_first_merged'].isoformat()
 
 # Save the functions and their change counts into a file
-with open('functionRetriever/outputData/function_changes.json', 'w') as fp:
+with open('./outputData/function_changes.json', 'w') as fp:
     json.dump(functions, fp, indent=4)
