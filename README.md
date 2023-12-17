@@ -1,5 +1,8 @@
 # Notes 
 - How do I run the database locally?
+    - install docker
+    - install qdrant
+    - run qdrant
 
 # Problems I had:
 - oututdata did not exist, I had to manually create the folder and the file function_changes.json
