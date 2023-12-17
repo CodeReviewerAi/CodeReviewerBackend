@@ -17,7 +17,7 @@ def get_function_data():
         pattern = re.compile(r'function\s+(\w+)\s*\((.*?)\)\s*\{([\s\S]*?)\}', re.MULTILINE)
         return pattern.findall(diff)
 
-    def get_full_function_at_commit(repo, commit_hash, function_name, file_path): 
+    def get_full_function_at_commit(repo, commit_hash, function_name, file_path):
         commit = repo.commit(commit_hash)
         blob = commit.tree / file_path
         file_content = blob.data_stream.read().decode('utf-8')
@@ -35,7 +35,7 @@ def get_function_data():
 
     for commit in merge_commits:
         parent_commit = commit.parents[0]
-        diffs = commit.diff(parent_commit, create_patch=True)
+        diffs = commit.diff(parent_commit, create_patch=True, unified=0)
 
         for diff in diffs:
             diff_content = diff.diff.decode('utf-8')
