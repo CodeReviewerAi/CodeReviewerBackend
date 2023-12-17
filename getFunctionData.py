@@ -1,14 +1,19 @@
 import git
 import json
 import re
+import os
 
 def get_function_data():
-    # Path to your repository
-    repo_path = '../inputData/testRepo2'
-    repo = git.Repo(repo_path)
+     # Determine the directory where this script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Construct the path to your repository relative to the script's location
+    repo_path = os.path.join(script_dir, '../inputData/testRepo2')
+    repo = git.Repo(repo_path) 
+    
     # Pull the latest changes from the main branch
-    origin = repo.remotes.origin
-    origin.pull('main')
+    repo.git.checkout('main')
+    repo.git.pull()
 
     merge_commits = [commit for commit in repo.iter_commits('main') if commit.parents and len(commit.parents) > 1]
     merge_commits.reverse()  # Reverse the list to get the oldest merge commit first
@@ -36,6 +41,8 @@ def get_function_data():
     for commit in merge_commits:
         parent_commit = commit.parents[0]
         diffs = commit.diff(parent_commit, create_patch=True)
+        # print merge commit message
+        print(f"Merge commit {commit.hexsha} with message '{commit.message}'")
 
         for diff in diffs:
             diff_content = diff.diff.decode('utf-8')
