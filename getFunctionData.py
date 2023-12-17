@@ -46,7 +46,7 @@ def get_function_data():
                             'changes_after_merge': 0,
                             'latest_function': full_function,
                             'time_first_merged': commit.authored_datetime,
-                            'file_path': diff.a_path  # Store file path here
+                            'file_path': diff.a_path 
                         }
 
     for func_name, func_info in functions.items():
@@ -63,10 +63,26 @@ def get_function_data():
                 except KeyError:
                     continue
 
+
+    # Find the min and max changes after merge
+    min_changes = min(functions.values(), key=lambda x: x['changes_after_merge'])['changes_after_merge']
+    max_changes = max(functions.values(), key=lambda x: x['changes_after_merge'])['changes_after_merge']
+
+    # Normalize the change counts between -1 and 1
+    for func_name, func_info in functions.items():
+        if max_changes != min_changes:
+            # Normalization formula to scale between -1 and 1
+            normalized_score = 2 * ((func_info['changes_after_merge'] - min_changes) / (max_changes - min_changes)) - 1
+            print(f"Function '{func_name}' has a normalized score of {normalized_score}")
+        else:
+            # In case all values are the same, set a default score (e.g., 0)
+            normalized_score = 0
+        func_info['score'] = normalized_score
+        
     # Convert datetime objects to string before saving
     for func in functions.values():
         func['time_first_merged'] = func['time_first_merged'].isoformat()
 
-    # Save the functions and their change counts into a file
+    # Save the functions and their change counts and normalized scores into a file
     with open('./outputData/function_changes.json', 'w') as fp:
         json.dump(functions, fp, indent=4)

@@ -68,7 +68,7 @@ def embed_sample_functions():
         # create the payload
         payload = {
             "function_name": function_name,
-            "score": function_data['changes_after_merge'],
+            "score": function_data['score'],
         }
 
         # Add the embedding to Qdrant
