@@ -35,7 +35,7 @@ def get_function_data():
 
     for commit in merge_commits:
         parent_commit = commit.parents[0]
-        diffs = commit.diff(parent_commit, create_patch=True, unified=0)
+        diffs = commit.diff(parent_commit, create_patch=True)
 
         for diff in diffs:
             diff_content = diff.diff.decode('utf-8')
@@ -51,7 +51,7 @@ def get_function_data():
                             'changes_after_merge': 0,
                             'latest_function': full_function,
                             'time_first_merged': commit.authored_datetime,
-                            'file_path': diff.a_path 
+                            'file_path': diff.a_path
                         }
 
     for func_key, func_info in functions.items():
@@ -80,7 +80,7 @@ def get_function_data():
         else:
             normalized_score = 0
         func_info['score'] = normalized_score
-        
+
     # Convert datetime objects to string before saving
     for func in functions.values():
         func['time_first_merged'] = func['time_first_merged'].isoformat()
