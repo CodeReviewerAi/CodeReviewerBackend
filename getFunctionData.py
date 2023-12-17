@@ -88,3 +88,6 @@ def get_function_data():
     # Save the functions and their change counts and normalized scores into a file
     with open('./outputData/function_changes.json', 'w') as fp:
         json.dump(functions, fp, indent=4)
+
+if __name__ == '__main__':
+    get_function_data()
