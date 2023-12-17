@@ -4,7 +4,7 @@ import re
 
 def get_function_data():
     # Path to your repository
-    repo_path = '../inputData/elixirsolutions'
+    repo_path = '../inputData/testRepo2'
     repo = git.Repo(repo_path)
 
     merge_commits = [commit for commit in repo.iter_commits('main') if commit.parents and len(commit.parents) > 1]
@@ -87,4 +87,4 @@ def get_function_data():
     with open('./outputData/function_changes.json', 'w') as fp:
         json.dump(functions, fp, indent=4)
 
-get_function_data()
+#get_function_data()
