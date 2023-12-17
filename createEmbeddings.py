@@ -5,7 +5,7 @@ import os
 import random
 import dotenv
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, Record
+from qdrant_client.models import CollectionDescription, Distance, VectorParams, Record
 
 def embed_sample_functions():
     # Initialize Qdrant Client
@@ -24,13 +24,22 @@ def embed_sample_functions():
     # Specify the embedding model
     model = "text-embedding-ada-002"
 
-    client.recreate_collection(
-        collection_name="functions",
-        vectors_config=VectorParams(
-            size=1536,
-            distance=Distance.COSINE,
-        ),
-    )
+    if client.get_collections().collections.__contains__(CollectionDescription(name='functions')):
+        client.recreate_collection(
+            collection_name="functions",
+            vectors_config=VectorParams(
+                size=1536,
+                distance=Distance.COSINE
+            )
+        )
+    else:
+        client.create_collection(
+            collection_name="functions",
+            vectors_config=VectorParams(
+                size=1536,
+                distance=Distance.COSINE
+            )
+        )
 
     # Process each function in the JSON data
     for function_name, function_data in list(json_data.items())[:5]: # Limit to 5 functions for testing should be #for function_name, function_data in json_data.items():

@@ -1,0 +1,5 @@
+GitPython
+openai
+python-dotenv
+qdrant-client
+requests
