@@ -9,10 +9,8 @@ import getFunctionData
 class TestFunctionData(unittest.TestCase):
 
     def setUp(self):
-        # Ensure the output directory exists
-        if not os.path.exists('./outputData'):
-            os.makedirs('./outputData')
-
+        pass
+        
     def test_createdWithMergeAndNotChanged(self):
         # Execute the script to update the function data
         getFunctionData.get_function_data()
