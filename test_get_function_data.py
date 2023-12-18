@@ -48,6 +48,21 @@ class TestFunctionData(unittest.TestCase):
         self.assertEqual(self.function_data[expected_key]['function_name'], expected_function['function_name'])
         self.assertEqual(self.function_data[expected_key]['merged_function'].strip(), expected_function['merged_function'].strip())
         self.assertEqual(self.function_data[expected_key]['changes_after_merge'], expected_function['changes_after_merge'])
+    
+    def test_createdWithMergeAndChangedAfterMerge(self):
+        # Define the expected function key and content
+        expected_key = 'blocks/tests.js::createdWithMergeAndChangedAfterMerge'
+        expected_function = {
+            'function_name': 'createdWithMergeAndChangedAfterMerge',
+            'merged_function': 'function createdWithMergeAndChangedAfterMerge() {\n    this is the first change\n    this is the second change\n}',
+            'changes_after_merge': 1
+        }
+
+        # Check if the function data contains the expected function with the correct data
+        self.assertIn(expected_key, self.function_data)
+        self.assertEqual(self.function_data[expected_key]['function_name'], expected_function['function_name'])
+        self.assertEqual(self.function_data[expected_key]['merged_function'].strip(), expected_function['merged_function'].strip())
+        self.assertEqual(self.function_data[expected_key]['changes_after_merge'], expected_function['changes_after_merge'])
         
 class CustomTestRunner(unittest.TextTestRunner):
     def run(self, test):
