@@ -1,6 +1,5 @@
 import unittest
 import json
-import os
 import sys
 
 sys.path.append('../')
@@ -9,30 +8,47 @@ import getFunctionData
 class TestFunctionData(unittest.TestCase):
 
     def setUp(self):
-        pass
-        
-    def test_createdWithMergeAndNotChanged(self):
         # Execute the script to update the function data
         getFunctionData.get_function_data()
 
         # Load the function changes data
         with open('./outputData/function_changes.json', 'r') as file:
-            function_data = json.load(file)
+            self.function_data = json.load(file)
 
+    def test_createdWithMergeAndNotChangedAfter(self):
         # Define the expected function key and content
-        expected_key = 'blocks/cards/cards.js::createdWithMergeAndNotChanged'
+        expected_key = 'blocks/tests.js::createdWithMergeAndNotChangedAfter'
         expected_function = {
-            'function_name': 'createdWithMergeAndNotChanged',
-            'merged_function': 'function createdWithMergeAndNotChanged() {\n  // this creates the function a branch other than main\n  // this is the first change in the test branch\n}',
+            'function_name': 'createdWithMergeAndNotChangedAfter',
+            'merged_function': 'function createdWithMergeAndNotChangedAfter() {\n    This is the first change\n    This is the second change\n}',
             'changes_after_merge': 0
         }
 
         # Check if the function data contains the expected function with the correct data
-        self.assertIn(expected_key, function_data)
-        self.assertEqual(function_data[expected_key]['function_name'], expected_function['function_name'])
-        self.assertEqual(function_data[expected_key]['merged_function'], expected_function['merged_function'])
-        self.assertEqual(function_data[expected_key]['changes_after_merge'], expected_function['changes_after_merge'])
+        self.assertIn(expected_key, self.function_data)
+        self.assertEqual(self.function_data[expected_key]['function_name'], expected_function['function_name'])
 
+        # Check if the function data contains the expected function with the correct data
+        self.assertIn(expected_key, self.function_data)
+        self.assertEqual(self.function_data[expected_key]['function_name'], expected_function['function_name'])
+        self.assertEqual(self.function_data[expected_key]['merged_function'].strip(), expected_function['merged_function'].strip())
+        self.assertEqual(self.function_data[expected_key]['changes_after_merge'], expected_function['changes_after_merge'])
+
+    def test_CreatedOnMainAndNotChangedAfterMerge(self):
+        # Define the expected function key and content
+        expected_key = 'blocks/tests.js::CreatedOnMainAndNotChangedAfterMerge'
+        expected_function = {
+            'function_name': 'CreatedOnMainAndNotChangedAfterMerge',
+            'merged_function': 'function CreatedOnMainAndNotChangedAfterMerge() {\n    this is the first change\n    this is the second change\n    this is the third change\n}',
+            'changes_after_merge': 0
+        }
+
+        # Check if the function data contains the expected function with the correct data
+        self.assertIn(expected_key, self.function_data)
+        self.assertEqual(self.function_data[expected_key]['function_name'], expected_function['function_name'])
+        self.assertEqual(self.function_data[expected_key]['merged_function'].strip(), expected_function['merged_function'].strip())
+        self.assertEqual(self.function_data[expected_key]['changes_after_merge'], expected_function['changes_after_merge'])
+        
 class CustomTestRunner(unittest.TextTestRunner):
     def run(self, test):
         result = super(CustomTestRunner, self).run(test)

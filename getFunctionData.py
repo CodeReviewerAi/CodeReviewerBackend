@@ -19,7 +19,7 @@ def get_function_data():
     merge_commits.reverse()  # Reverse the list to get the oldest merge commit first
 
     def get_func_name(diff):
-        pattern = re.compile(r'function\s+(\w+)\s*\((.*?)\)\s*\{([\s\S]*?)\}', re.MULTILINE)
+        pattern = re.compile(r'function\s+([^\(]+)\s*\(([^)]*)\)\s*{', re.MULTILINE)
         return pattern.findall(diff)
 
     def get_full_function_at_commit(repo, commit_hash, function_name, file_path):
@@ -41,15 +41,18 @@ def get_function_data():
     for commit in merge_commits:
         parent_commit = commit.parents[0]
         diffs = commit.diff(parent_commit, create_patch=True)
-        # print merge commit message
         print(f"Merge commit {commit.hexsha} with message '{commit.message}'")
 
         for diff in diffs:
             diff_content = diff.diff.decode('utf-8')
-            for func_name, _, _ in get_func_name(diff_content):
+            print(f"Diff for file '{diff.a_path}':\n{diff_content}")
+            for func_name, _ in get_func_name(diff_content):
                 full_function = get_full_function_at_commit(repo, commit.hexsha, func_name, diff.a_path)
+                print(f"Found function '{func_name}' in file '{diff.a_path}'")
+                #print(f"Full function: {full_function}")
                 if full_function:
                     func_key = f"{diff.a_path}::{func_name}"
+                    #print(f"Function key: {func_key}")
                     if func_key not in functions:
                         functions[func_key] = {
                             'function_name': func_name,
@@ -60,6 +63,7 @@ def get_function_data():
                             'time_first_merged': commit.authored_datetime,
                             'file_path': diff.a_path
                         }
+
 
     for func_key, func_info in functions.items():
         for commit in repo.iter_commits('main', reverse=True):  # Iterate from the oldest to newest
