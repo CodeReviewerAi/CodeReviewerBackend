@@ -7,13 +7,14 @@ import getFunctionData
 
 class TestFunctionData(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         # Execute the script to update the function data
         getFunctionData.get_function_data()
 
         # Load the function changes data
         with open('./outputData/function_changes.json', 'r') as file:
-            self.function_data = json.load(file)
+            cls.function_data = json.load(file)
 
     def test_createdWithMergeAndNotChangedAfter(self):
         # Define the expected function key and content
