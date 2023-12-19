@@ -3,12 +3,15 @@ import json
 import re
 import os
 
-def get_function_data():
-     # Determine the directory where this script is located
+def get_function_data(repo_path='../inputData/testRepo2'):
+    # Determine the output file based on the original repo_path
+    output_file = 'outputData/test_function_changes.json' if repo_path.endswith('testRepo2') else 'outputData/function_changes.json'
+
+    # Determine the directory where this script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
     # Construct the path to your repository relative to the script's location
-    repo_path = os.path.join(script_dir, '../inputData/testRepo2')
+    repo_path = os.path.join(script_dir, repo_path)
     repo = git.Repo(repo_path) 
     
     # Pull the latest changes from the main branch
@@ -97,8 +100,9 @@ def get_function_data():
         func['time_first_merged'] = func['time_first_merged'].isoformat()
 
     # Save the functions and their change counts and normalized scores into a file
-    with open('./outputData/function_changes.json', 'w') as fp:
-        json.dump(functions, fp, indent=4)
+    with open(output_file, 'w') as f:
+        json.dump(functions, f, indent=4)
 
 if __name__ == '__main__':
+    # pass repo_path variable if you want to test on another repo other than default
     get_function_data()

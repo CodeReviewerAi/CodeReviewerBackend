@@ -13,7 +13,7 @@ class TestFunctionData(unittest.TestCase):
         getFunctionData.get_function_data()
 
         # Load the function changes data
-        with open('./outputData/function_changes.json', 'r') as file:
+        with open('./outputData/test_function_changes.json', 'r') as file:
             cls.function_data = json.load(file)
 
     def test_createdWithMergeAndNotChangedAfter(self):
