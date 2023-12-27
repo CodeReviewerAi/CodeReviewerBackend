@@ -99,3 +99,4 @@ def get_function_data(repo_path='../inputData/testRepo2'):
 if __name__ == '__main__':
     # pass repo_path variable if you want to test on another repo other than default
     get_function_data()
+    print('Printed function data to outputData/test_function_changes.json ✅')
