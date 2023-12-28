@@ -4,26 +4,20 @@ import re
 import os
 
 def get_function_data(repo_path='../inputData/testRepo2'):
-    # Determine the output file based on the original repo_path
     output_file = 'outputData/test_function_changes.json' if repo_path.endswith('testRepo2') else 'outputData/function_changes.json'
-
-    # Determine the directory where this script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
-
-    # Construct the path to your repository relative to the script's location
     repo_path = os.path.join(script_dir, repo_path)
     repo = git.Repo(repo_path) 
     
-    # Pull the latest changes from the main branch
     repo.git.checkout('main')
     repo.git.pull()
 
     merge_commits = [commit for commit in repo.iter_commits('main') if commit.parents and len(commit.parents) > 1]
-    merge_commits.reverse()  # Reverse the list to get the oldest merge commit first
+    merge_commits.reverse()
 
-    def get_func_name(diff):
+    def get_functions_from_file(file_content):
         pattern = re.compile(r'function\s+([^\(]+)\s*\(([^)]*)\)\s*{', re.MULTILINE)
-        return pattern.findall(diff)
+        return pattern.findall(file_content)
 
     def get_full_function_at_commit(repo, commit_hash, function_name, file_path):
         commit = repo.commit(commit_hash)
@@ -42,25 +36,25 @@ def get_function_data(repo_path='../inputData/testRepo2'):
     functions = {}
 
     for commit in merge_commits:
-        parent_commit = commit.parents[0]
-        diffs = commit.diff(parent_commit, create_patch=True)
-
-        for diff in diffs:
-            diff_content = diff.diff.decode('utf-8')
-            for func_name, _ in get_func_name(diff_content):
-                full_function = get_full_function_at_commit(repo, commit.hexsha, func_name, diff.a_path)
-                if full_function:
-                    func_key = f"{diff.a_path}::{func_name}"
-                    if func_key not in functions:
-                        functions[func_key] = {
-                            'function_name': func_name,
-                            'merged_function': full_function,
-                            'commit': commit.hexsha,
-                            'changes_after_merge': 0,
-                            'latest_function': full_function,
-                            'time_first_merged': commit.authored_datetime,
-                            'file_path': diff.a_path
-                        }
+        for file_path in commit.stats.files:
+            if file_path.endswith('.js'):  # Only consider JavaScript files
+                commit = repo.commit(commit.hexsha)
+                blob = commit.tree / file_path
+                file_content = blob.data_stream.read().decode('utf-8')
+                for func_name, _ in get_functions_from_file(file_content):
+                    full_function = get_full_function_at_commit(repo, commit.hexsha, func_name, file_path)
+                    if full_function:
+                        func_key = f"{file_path}::{func_name}"
+                        if func_key not in functions:
+                            functions[func_key] = {
+                                'function_name': func_name,
+                                'merged_function': full_function,
+                                'commit': commit.hexsha,
+                                'changes_after_merge': 0,
+                                'latest_function': full_function,
+                                'time_first_merged': commit.authored_datetime,
+                                'file_path': file_path
+                            }
 
 
     for func_key, func_info in functions.items():
@@ -98,5 +92,6 @@ def get_function_data(repo_path='../inputData/testRepo2'):
 
 if __name__ == '__main__':
     # pass repo_path variable if you want to test on another repo other than default
+    #repo_path='../inputData/elixirsolutions'
     get_function_data()
     print('Printed function data to outputData/test_function_changes.json ✅')
