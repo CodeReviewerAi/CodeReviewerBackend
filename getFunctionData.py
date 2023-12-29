@@ -1,14 +1,15 @@
-import git
-import json
 import re
 import os
+import git
+import json
+import esprima
 
 def get_function_data(repo_path='../inputData/testRepo2'):
     output_file = 'outputData/test_function_changes.json' if repo_path.endswith('testRepo2') else 'outputData/function_changes.json'
     script_dir = os.path.dirname(os.path.abspath(__file__))
     repo_path = os.path.join(script_dir, repo_path)
-    repo = git.Repo(repo_path) 
-    
+    repo = git.Repo(repo_path)
+
     repo.git.checkout('main')
     repo.git.pull()
 
@@ -16,20 +17,35 @@ def get_function_data(repo_path='../inputData/testRepo2'):
     merge_commits.reverse()
 
     def get_functions_from_file(file_content):
-        pattern = re.compile(r'function\s+([^\(]+)\s*\(([^)]*)\)\s*{', re.MULTILINE)
-        return pattern.findall(file_content)
+        try:
+            parsed = esprima.parseModule(file_content, {"tolerant": True})
+            functions = []
+            for node in parsed.body:
+                if node.type == 'FunctionDeclaration':
+                    function_name = node.id.name if node.id else None
+                    functions.append(function_name)
+            return functions
+        except esprima.Error as e:
+            print("Error has occured in get_functions_from_file")
+            print(f"Esprima parsing error: {e}")
+            return []
 
     def get_full_function_at_commit(repo, commit_hash, function_name, file_path):
         commit = repo.commit(commit_hash)
         blob = commit.tree / file_path
         file_content = blob.data_stream.read().decode('utf-8')
 
-        pattern = re.compile(r'function\s+' + re.escape(function_name) + r'\s*\((.*?)\)\s*\{([\s\S]*?)\}', re.MULTILINE)
-        match = pattern.search(file_content)
-
-        if match:
-            full_function = f"function {function_name}({match.group(1)}) {{{match.group(2)}}}"
-            return full_function
+        try:
+            parsed = esprima.parseModule(file_content, {"tolerant": True, "range": True})
+            for node in parsed.body:
+                if node.type == 'FunctionDeclaration' and node.id and node.id.name == function_name:
+                    if hasattr(node, 'range') and node.range:
+                        start = node.range[0]
+                        end = node.range[1]
+                        return file_content[start:end]
+        except esprima.Error as e:
+            print("Error has occured in get_full_function_at_commit")
+            print(f"Esprima parsing error: {e}")
 
         return None
 
@@ -37,11 +53,11 @@ def get_function_data(repo_path='../inputData/testRepo2'):
 
     for commit in merge_commits:
         for file_path in commit.stats.files:
-            if file_path.endswith('.js'):  # Only consider JavaScript files
+            if file_path.endswith('.js'):
                 commit = repo.commit(commit.hexsha)
                 blob = commit.tree / file_path
                 file_content = blob.data_stream.read().decode('utf-8')
-                for func_name, _ in get_functions_from_file(file_content):
+                for func_name in get_functions_from_file(file_content):
                     full_function = get_full_function_at_commit(repo, commit.hexsha, func_name, file_path)
                     if full_function:
                         func_key = f"{file_path}::{func_name}"
@@ -55,7 +71,6 @@ def get_function_data(repo_path='../inputData/testRepo2'):
                                 'time_first_merged': commit.authored_datetime,
                                 'file_path': file_path
                             }
-
 
     for func_key, func_info in functions.items():
         for commit in repo.iter_commits('main', reverse=True):  # Iterate from the oldest to newest
@@ -92,6 +107,6 @@ def get_function_data(repo_path='../inputData/testRepo2'):
 
 if __name__ == '__main__':
     # pass repo_path variable if you want to test on another repo other than default
-    #repo_path='../inputData/elixirsolutions'
-    get_function_data()
+    get_function_data(repo_path='../inputData/elixirsolutions')
+    # get_function_data()
     print('Printed function data to outputData/test_function_changes.json ✅')
