@@ -26,8 +26,10 @@ def get_function_data(repo_path='../inputData/testRepo2'):
                     functions.append(function_name)
             return functions
         except esprima.Error as e:
+            print("")
             print("Error has occured in get_functions_from_file")
             print(f"Esprima parsing error: {e}")
+            print("Error occurred at line: ", file_content.split('\n')[e.lineNumber - 1])
             return []
 
     def get_full_function_at_commit(repo, commit_hash, function_name, file_path):
@@ -46,6 +48,7 @@ def get_function_data(repo_path='../inputData/testRepo2'):
         except esprima.Error as e:
             print("Error has occured in get_full_function_at_commit")
             print(f"Esprima parsing error: {e}")
+            print("Error occurred at line: ", file_content.split('\n')[e.lineNumber - 1])
 
         return None
 
