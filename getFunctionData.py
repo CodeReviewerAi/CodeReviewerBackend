@@ -139,3 +139,7 @@ if __name__ == '__main__':
     #get_function_data(repo_path='../inputData/elixirsolutions')
     get_function_data()
     print('Printed function data to outputData/test_function_changes.json ✅')
+
+    # Todo:
+    # - Fix tests the issue is that they are not valid JS
+    # - reduce runtime by optimizing 
