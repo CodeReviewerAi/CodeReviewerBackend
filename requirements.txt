@@ -3,4 +3,3 @@ openai
 python-dotenv
 qdrant-client
 requests
-esprima
