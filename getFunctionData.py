@@ -5,7 +5,7 @@ import json
 import subprocess
 
 def get_function_data(repo_path='../inputData/testRepo'):
-    output_file = 'outputData/test_function_changes.json' if repo_path.endswith('testRepo2') else 'outputData/function_changes.json'
+    output_file = 'outputData/test_function_changes.json' if repo_path.endswith('testRepo') else 'outputData/function_changes.json'
     script_dir = os.path.dirname(os.path.abspath(__file__))
     repo_path = os.path.join(script_dir, repo_path)
     repo = git.Repo(repo_path)
