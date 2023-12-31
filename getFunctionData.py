@@ -4,8 +4,8 @@ import git
 import json
 import subprocess
 
-def get_function_data(repo_path='../inputData/testRepo2'):
-    output_file = 'outputData/test_function_changes.json' if repo_path.endswith('testRepo2') else 'outputData/function_changes.json'
+def get_function_data(repo_path='../inputData/testRepo'):
+    output_file = 'outputData/test_function_changes.json' if repo_path.endswith('testRepo') else 'outputData/function_changes.json'
     script_dir = os.path.dirname(os.path.abspath(__file__))
     repo_path = os.path.join(script_dir, repo_path)
     repo = git.Repo(repo_path)
@@ -139,7 +139,3 @@ if __name__ == '__main__':
     #get_function_data(repo_path='../inputData/elixirsolutions')
     get_function_data()
     print('Printed function data to outputData/test_function_changes.json ✅')
-
-    # Todo:
-    # - Fix tests the issue is that they are not valid JS
-    # - reduce runtime by optimizing 

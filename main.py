@@ -5,9 +5,9 @@ import createEmbeddings
 from userInput import processUserInput
 
 # Run the main function from getFunctionData
-# pass this variable if you want to run another repo than testRepo2: 
-repo_path='../inputData/elixirsolutions'
-getFunctionData.get_function_data(repo_path)
+# pass this variable if you want to run another repo than testRepo: 
+# repo_path='../inputData/elixirsolutions'
+getFunctionData.get_function_data()
 
 # Run the main function from createEmbeddings
 createEmbeddings.embed_sample_functions()
