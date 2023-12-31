@@ -142,9 +142,9 @@ def get_function_data(repo_path='../inputData/testRepo'):
 
 if __name__ == '__main__':
     start_time = time.time()
-    get_function_data(repo_path='../inputData/elixirsolutions')
+    get_function_data()
     end_time = time.time()
-    elapsed_time = (end_time - start_time) / 60  # convert to minutes
+    elapsed_time = round((end_time - start_time) / 60, 2)  # convert to minutes and round to 2 decimal places
     print('✅ Printed function data to outputData/test_function_changes.json ✅')
     print(f'⏰ The program took {elapsed_time} minutes to run. ⏰')
    
