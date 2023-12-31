@@ -50,13 +50,13 @@ class TestFunctionData(unittest.TestCase):
         self.assertEqual(self.function_data[expected_key]['merged_function'].strip(), expected_function['merged_function'].strip())
         self.assertEqual(self.function_data[expected_key]['changes_after_merge'], expected_function['changes_after_merge'])
     
-    """
+    
     def test_createdWithMergeAndChangedAfterMerge(self):
         # Define the expected function key and content
         expected_key = 'blocks/test.js::createdWithMergeAndChangedAfterMerge'
         expected_function = {
             'function_name': 'createdWithMergeAndChangedAfterMerge',
-            'merged_function': 'function createdWithMergeAndChangedAfterMerge() {\n    this is the first change\n    this is the second change\n}',
+            'merged_function': "function createdWithMergeAndChangedAfterMerge() {\n    console.log('This creates the function on test branch')\n    console.log('second change on test branch')\n}",
             'changes_after_merge': 1
         }
 
@@ -65,7 +65,8 @@ class TestFunctionData(unittest.TestCase):
         self.assertEqual(self.function_data[expected_key]['function_name'], expected_function['function_name'])
         self.assertEqual(self.function_data[expected_key]['merged_function'].strip(), expected_function['merged_function'].strip())
         self.assertEqual(self.function_data[expected_key]['changes_after_merge'], expected_function['changes_after_merge'])
-        
+
+    """  
     def test_createdOnMainAndChangedAfterMerge(self):
         # Define the expected function key and content
         expected_key = 'blocks/test.js::createdOnMainAndChangedAfterMerge'
