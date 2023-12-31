@@ -1,7 +1,7 @@
-import re
 import os
 import git
 import json
+import time
 import subprocess
 
 def get_function_data(repo_path='../inputData/testRepo'):
@@ -72,46 +72,52 @@ def get_function_data(repo_path='../inputData/testRepo'):
     functions = {}
 
     for commit in merge_commits:
+        #print number of the commit currently being processed
+        print(f"Processing MERGE COMMIT: {commit.count()}/{repo.head.commit.count()}")
         for file_path in commit.stats.files:
             if file_path.endswith('.js'):
-                commit = repo.commit(commit.hexsha)
-                print(f"Processing commit {commit.hexsha}...")
-                blob = commit.tree / file_path
-                file_content = blob.data_stream.read().decode('utf-8')
-                print(f"File path: {file_path}")
-                for func_name in get_functions_from_file(file_content):
-                    full_function = get_full_function_at_commit(repo, commit.hexsha, func_name, file_path)
-                    print(f"Processing function: {func_name}")
-                    if full_function:
-                        func_key = f"{file_path}::{func_name}"
-                        if func_key not in functions:
-                            print(f"New function found: {func_key}")
-                            functions[func_key] = {
-                                'function_name': func_name,
-                                'merged_function': full_function,
-                                'commit': commit.hexsha,
-                                'changes_after_merge': 0,
-                                'latest_function': full_function,
-                                'time_first_merged': commit.authored_datetime,
-                                'file_path': file_path
-                            }
-                print(f"Finished processing commit {commit.hexsha}\n")
-
-    for func_key, func_info in functions.items():
-        for commit in repo.iter_commits('main', reverse=True):  # Iterate from the oldest to newest
-            print(f"Processing commit in the second loop{commit.hexsha}...")
-            # print the number of the commit where 1 is the oldest commit
-            print(f"Commit number: {commit.count()}")
-            if commit.authored_datetime > func_info['time_first_merged']:
                 try:
-                    blob = commit.tree / func_info['file_path']
+                    commit = repo.commit(commit.hexsha)
+                    blob = commit.tree / file_path
                     file_content = blob.data_stream.read().decode('utf-8')
-                    new_content = get_full_function_at_commit(repo, commit.hexsha, func_info['function_name'], func_info['file_path'])
-                    if new_content and new_content.strip() != func_info['latest_function'].strip():
-                        print(f"Found change in function {func_key} at commit {commit.hexsha}")
-                        func_info['changes_after_merge'] += 1
-                        func_info['latest_function'] = new_content
-                except KeyError:
+                    for func_name in get_functions_from_file(file_content):
+                        full_function = get_full_function_at_commit(repo, commit.hexsha, func_name, file_path)
+                        if full_function:
+                            func_key = f"{file_path}::{func_name}"
+                            if func_key not in functions:
+                                functions[func_key] = {
+                                    'function_name': func_name,
+                                    'merged_function': full_function,
+                                    'commit': commit.hexsha,
+                                    'changes_after_merge': 0,
+                                    'latest_function': full_function,
+                                    'time_first_merged': commit.authored_datetime,
+                                    'file_path': file_path
+                                }
+                except Exception as e:
+                        print(f"Error processing commit {commit.hexsha}: {e}")
+                        continue
+
+    for commit in repo.iter_commits('main', reverse=True):  # Iterate from the oldest to newest
+        #print number of the commit currently being processed
+        print(f"Processing COMMIT: {commit.count()}/{repo.head.commit.count()}")
+
+        for file_path in commit.stats.files:
+            if file_path.endswith('.js'):
+                try:
+                    blob = commit.tree / file_path
+                    file_content = blob.data_stream.read().decode('utf-8')
+                    current_functions = get_functions_from_file(file_content)
+
+                    for func_key, func_info in functions.items():
+                        if func_info['file_path'] == file_path:
+                            if func_info['function_name'] in current_functions:
+                                new_content = get_full_function_at_commit(repo, commit.hexsha, func_info['function_name'], file_path)
+                                if new_content and new_content.strip() != func_info['latest_function'].strip() and commit.authored_datetime > func_info['time_first_merged']:
+                                    func_info['changes_after_merge'] += 1
+                                    func_info['latest_function'] = new_content
+                except Exception as e:
+                    print(f"Error processing commit {commit.hexsha}: {e}")
                     continue
 
     # Find the min and max changes after merge
@@ -135,7 +141,10 @@ def get_function_data(repo_path='../inputData/testRepo'):
         json.dump(functions, f, indent=4)
 
 if __name__ == '__main__':
-    # pass repo_path variable if you want to test on another repo other than default
-    #get_function_data(repo_path='../inputData/elixirsolutions')
-    get_function_data()
-    print('Printed function data to outputData/test_function_changes.json ✅')
+    start_time = time.time()
+    get_function_data(repo_path='../inputData/elixirsolutions')
+    end_time = time.time()
+    elapsed_time = (end_time - start_time) / 60  # convert to minutes
+    print('✅ Printed function data to outputData/test_function_changes.json ✅')
+    print(f'⏰ The program took {elapsed_time} minutes to run. ⏰')
+   
