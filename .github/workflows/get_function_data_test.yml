@@ -18,6 +18,9 @@ jobs:
         mkdir -p ${{ github.workspace }}/inputData  # Create inputData directory
         git clone https://github.com/RapidReview-ai/testRepo ${{ github.workspace }}/inputData/testRepo
 
+    - name: Create outputData directory
+      run: mkdir -p ${{ github.workspace }}/functionRetriever/outputData
+
     - name: Set up Python 3.x
       uses: actions/setup-python@v2
       with:
