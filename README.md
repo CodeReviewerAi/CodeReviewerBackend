@@ -25,3 +25,12 @@
 - run `python main.py` to run the whole app including, getting the data from the git repo, generating embeddings, creating the database, and running the query.
     - If you only want to run one of these steps, run the corresponding file on their own.
 - You can run the tests by running `pyththon test_getFuntionData.py`
+
+---
+
+# What is CodeReviewer?
+CodeReviewer is a tool that uses machine learning to help developers reviewing code. It is trained on a dataset of code from the [hlxsites](https://github.com/hlxsites) repositories and is able to predict how likely a given function is going to break in the future.
+
+## How does it work?
+We save each functions first version(When it was first merged) and how often it was changed in the future. We then use this data to create embeddings for each function. We then use these embeddings to create a database using Qdrant. 
+When a user uploads a function, we use the embeddings to find the 5 most similar functions in the database. We then use the number of times these functions were changed to predict how likely the user's function is to break in the future.
