@@ -33,18 +33,53 @@ def get_function_data(repo_path='../inputData/testRepo'):
 
         functions = []
         try:
-            # Access the 'body' within 'program' of the AST
-            for node in ast['program']['body']:
-                if node['type'] == 'FunctionDeclaration':
-                    function_name = node['id']['name'] if node.get('id') else None
-                    if function_name:
-                        functions.append(function_name)
+            # Traverse the AST to find function declarations
+            def traverse(node):
+                if not isinstance(node, dict):
+                    return
+
+                if 'type' in node:
+                    # Check for arrow functions or function expressions assigned to variables
+                    if node['type'] in ['VariableDeclarator'] and 'init' in node:
+                        init_node = node['init']
+                        if init_node and 'type' in init_node and init_node['type'] in ['FunctionExpression', 'ArrowFunctionExpression']:
+                            function_name = None
+                            if 'name' in node['id']:
+                                function_name = node['id']['name']
+                            if function_name:
+                                functions.append(function_name)
+
+                    # Existing checks for FunctionDeclaration, etc.
+                    elif node['type'] in ['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression']:
+                        function_name = None
+                        if 'id' in node and node['id'] is not None:
+                            function_name = node['id']['name']
+                        elif 'key' in node and 'name' in node['key']:
+                            function_name = node['key']['name']
+                        if function_name:
+                            functions.append(function_name)
+
+                    # Check for methods in classes
+                    if node['type'] == 'MethodDefinition' and 'key' in node and node['key']['type'] == 'Identifier':
+                        functions.append(node['key']['name'])
+
+                # Recursively traverse child nodes
+                for key, value in node.items():
+                    if isinstance(value, dict):
+                        traverse(value)
+                    elif isinstance(value, list):
+                        for item in value:
+                            if isinstance(item, dict):
+                                traverse(item)
+
+            traverse(ast['program'])
         except Exception as e:
             print(f"Error processing AST: {e}")
         finally:
             if os.path.exists(temp_file_path):
                 os.remove(temp_file_path)  # Clean up the temporary file
         return functions
+
 
     def get_full_function_at_commit(repo, commit_hash, function_name, file_path):
         commit = repo.commit(commit_hash)
@@ -57,16 +92,45 @@ def get_function_data(repo_path='../inputData/testRepo'):
             return None
 
         try:
-            # Access the 'body' within 'program' of the AST
-            for node in ast['program']['body']:
-                if node['type'] == 'FunctionDeclaration' and node.get('id', {}).get('name') == function_name:
-                    start, end = node['start'], node['end']
-                    return file_content[start:end]
+            # Define a function to recursively search for the function
+            def find_function(node, function_name):
+                if not isinstance(node, dict):
+                    return None
+
+                # Handle different types of function nodes
+                if node.get('type') == 'FunctionDeclaration' and node.get('id', {}).get('name') == function_name:
+                    return node.get('start'), node.get('end')
+
+                if node.get('type') == 'VariableDeclarator':
+                    init_node = node.get('init')
+                    if isinstance(init_node, dict) and init_node.get('type') in ['FunctionExpression', 'ArrowFunctionExpression']:
+                        if node.get('id', {}).get('name') == function_name:
+                            return node.get('start'), node.get('end')
+
+                # Recursive traversal
+                for key, value in node.items():
+                    if isinstance(value, dict):
+                        result = find_function(value, function_name)
+                        if result:
+                            return result
+                    elif isinstance(value, list):
+                        for item in value:
+                            result = find_function(item, function_name)
+                            if result:
+                                return result
+                return None
+
+            # Search for the function in the AST
+            start_end = find_function(ast['program'], function_name)  # Pass function_name here
+            if start_end:
+                start, end = start_end
+                return file_content[start:end]
         except Exception as e:
             print(f"Error processing AST: {e}")
         finally:
             if os.path.exists(temp_file_path):
                 os.remove(temp_file_path)  # Clean up the temporary file
+
         return None
 
     functions = {}
@@ -77,11 +141,16 @@ def get_function_data(repo_path='../inputData/testRepo'):
         for file_path in commit.stats.files:
             if file_path.endswith('.js'):
                 try:
-                    commit = repo.commit(commit.hexsha)
                     blob = commit.tree / file_path
                     file_content = blob.data_stream.read().decode('utf-8')
+                    if commit.hexsha == 'bf7e67e8defbadbef8fcdd7bc8201a7f54e3b430':
+                        print("found the commit")
                     for func_name in get_functions_from_file(file_content):
+                        if commit.hexsha == 'bf7e67e8defbadbef8fcdd7bc8201a7f54e3b430':
+                            print(func_name) # Something strange is happening here with the function name getting reset
                         full_function = get_full_function_at_commit(repo, commit.hexsha, func_name, file_path)
+                        if commit.hexsha == 'bf7e67e8defbadbef8fcdd7bc8201a7f54e3b430':
+                                print(full_function)
                         if full_function:
                             func_key = f"{file_path}::{func_name}"
                             if func_key not in functions:
@@ -142,9 +211,8 @@ def get_function_data(repo_path='../inputData/testRepo'):
 
 if __name__ == '__main__':
     start_time = time.time()
-    get_function_data()
+    get_function_data(repo_path='../inputData/elixirsolutions')
     end_time = time.time()
     elapsed_time = round((end_time - start_time) / 60, 2)  # convert to minutes and round to 2 decimal places
     print('✅ Printed function data to outputData/test_function_changes.json ✅')
     print(f'⏰ The program took {elapsed_time} minutes to run. ⏰')
-   
