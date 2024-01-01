@@ -16,6 +16,14 @@ def get_function_data(repo_path='../inputData/testRepo'):
     merge_commits = [commit for commit in repo.iter_commits('main') if commit.parents and len(commit.parents) > 1]
     merge_commits.reverse()
 
+    def create_temp_file_and_get_ast(file_content, temp_file_path='temp.js'):
+        with open(temp_file_path, 'w') as f:
+            f.write(file_content)
+        ast = get_ast_from_js(file_content, temp_file_path)
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)  # Clean up the temporary file
+        return ast
+
     def get_ast_from_js(file_content, temp_file_path):
         with open(temp_file_path, 'w') as temp_file:
             temp_file.write(file_content)
@@ -26,10 +34,9 @@ def get_function_data(repo_path='../inputData/testRepo'):
         return json.loads(result.stdout)
 
     def get_functions_from_file(file_content):
-        temp_file_path = 'temp.js'  # Temporary file to store the content
-        ast = get_ast_from_js(file_content, temp_file_path)
-        if not ast: 
-            return []
+
+        # create ast from file content
+        ast = create_temp_file_and_get_ast(file_content)
 
         functions = []
         try:
@@ -75,9 +82,21 @@ def get_function_data(repo_path='../inputData/testRepo'):
             traverse(ast['program'])
         except Exception as e:
             print(f"Error processing AST: {e}")
-        finally:
-            if os.path.exists(temp_file_path):
-                os.remove(temp_file_path)  # Clean up the temporary file
+        return functions
+    
+    def normalize_change_counts(functions):
+        # Find the min and max changes after merge
+        min_changes = min(functions.values(), key=lambda x: x['changes_after_merge'])['changes_after_merge']
+        max_changes = max(functions.values(), key=lambda x: x['changes_after_merge'])['changes_after_merge']
+
+        # Normalize the change counts between -1 and 1
+        for func_key, func_info in functions.items():
+            if max_changes != min_changes:
+                normalized_score = 2 * ((func_info['changes_after_merge'] - min_changes) / (max_changes - min_changes)) - 1
+            else:
+                normalized_score = 0
+            func_info['score'] = normalized_score
+
         return functions
 
 
@@ -86,10 +105,8 @@ def get_function_data(repo_path='../inputData/testRepo'):
         blob = commit.tree / file_path
         file_content = blob.data_stream.read().decode('utf-8')
 
-        temp_file_path = 'temp.js'
-        ast = get_ast_from_js(file_content, temp_file_path)
-        if not ast:
-            return None
+        # create ast from file content
+        ast = create_temp_file_and_get_ast(file_content)
 
         try:
             # Define a function to recursively search for the function
@@ -127,30 +144,22 @@ def get_function_data(repo_path='../inputData/testRepo'):
                 return file_content[start:end]
         except Exception as e:
             print(f"Error processing AST: {e}")
-        finally:
-            if os.path.exists(temp_file_path):
-                os.remove(temp_file_path)  # Clean up the temporary file
 
         return None
 
     functions = {}
 
+
+
+
     for commit in merge_commits:
-        #print number of the commit currently being processed
-        print(f"Processing MERGE COMMIT: {commit.count()}/{repo.head.commit.count()}")
         for file_path in commit.stats.files:
             if file_path.endswith('.js'):
                 try:
                     blob = commit.tree / file_path
                     file_content = blob.data_stream.read().decode('utf-8')
-                    if commit.hexsha == 'bf7e67e8defbadbef8fcdd7bc8201a7f54e3b430':
-                        print("found the commit")
                     for func_name in get_functions_from_file(file_content):
-                        if commit.hexsha == 'bf7e67e8defbadbef8fcdd7bc8201a7f54e3b430':
-                            print(func_name) # Something strange is happening here with the function name getting reset
                         full_function = get_full_function_at_commit(repo, commit.hexsha, func_name, file_path)
-                        if commit.hexsha == 'bf7e67e8defbadbef8fcdd7bc8201a7f54e3b430':
-                                print(full_function)
                         if full_function:
                             func_key = f"{file_path}::{func_name}"
                             if func_key not in functions:
@@ -167,10 +176,7 @@ def get_function_data(repo_path='../inputData/testRepo'):
                         print(f"Error processing commit {commit.hexsha}: {e}")
                         continue
 
-    for commit in repo.iter_commits('main', reverse=True):  # Iterate from the oldest to newest
-        #print number of the commit currently being processed
-        print(f"Processing COMMIT: {commit.count()}/{repo.head.commit.count()}")
-
+    for commit in repo.iter_commits('main', reverse=True):  # Iterate from the oldest to newest commit
         for file_path in commit.stats.files:
             if file_path.endswith('.js'):
                 try:
@@ -189,17 +195,8 @@ def get_function_data(repo_path='../inputData/testRepo'):
                     print(f"Error processing commit {commit.hexsha}: {e}")
                     continue
 
-    # Find the min and max changes after merge
-    min_changes = min(functions.values(), key=lambda x: x['changes_after_merge'])['changes_after_merge']
-    max_changes = max(functions.values(), key=lambda x: x['changes_after_merge'])['changes_after_merge']
-
-    # Normalize the change counts between -1 and 1
-    for func_key, func_info in functions.items():
-        if max_changes != min_changes:
-            normalized_score = 2 * ((func_info['changes_after_merge'] - min_changes) / (max_changes - min_changes)) - 1
-        else:
-            normalized_score = 0
-        func_info['score'] = normalized_score
+    # Normalize the change counts to a score between -1 and 1
+    functions = normalize_change_counts(functions)
 
     # Convert datetime objects to string before saving
     for func in functions.values():
@@ -211,7 +208,7 @@ def get_function_data(repo_path='../inputData/testRepo'):
 
 if __name__ == '__main__':
     start_time = time.time()
-    get_function_data(repo_path='../inputData/elixirsolutions')
+    get_function_data() #pass this variable if you want to run another repo than testRepo: repo_path='../inputData/elixirsolutions'
     end_time = time.time()
     elapsed_time = round((end_time - start_time) / 60, 2)  # convert to minutes and round to 2 decimal places
     print('✅ Printed function data to outputData/test_function_changes.json ✅')
