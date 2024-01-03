@@ -7,7 +7,7 @@ import dotenv
 from qdrant_client import QdrantClient
 from qdrant_client.models import CollectionDescription, Distance, VectorParams, Record
 
-def embed_sample_functions():
+def embed_sample_functions(repo_path):
     # Initialize Qdrant Client
     client = QdrantClient(host='localhost', port=6333)
     # client = QdrantClient(":memory:")
@@ -17,7 +17,7 @@ def embed_sample_functions():
     openai.api_key = os.getenv("OPENAI_API_KEY")
 
     # Load the JSON data from the file
-    json_file_path = 'outputData/function_changes.json' # depends on how you run the file, should be changed to be global and not local path
+    json_file_path = 'outputData/test_function_changes.json' if repo_path.endswith('testRepo') else 'outputData/function_changes.json'
     with open(json_file_path, 'r') as file:
         json_data = json.load(file)
 

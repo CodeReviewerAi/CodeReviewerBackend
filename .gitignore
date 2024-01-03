@@ -1,5 +1,9 @@
 .env
-**.json
+function_changes.json
+test_function_changes.json
+package-lock.json
 path
 .DS_Store
 **/__pycache__
+node_modules
+temp.js

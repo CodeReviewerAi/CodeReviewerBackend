@@ -1,0 +1,17 @@
+{
+  "name": "functionretriever",
+  "version": "1.0.0",
+  "description": "- How do I run the database locally?     - install docker     - install qdrant     - run qdrant",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.23.7",
+    "@babel/parser": "^7.23.6",
+    "babel": "^6.23.0"
+  }
+}
