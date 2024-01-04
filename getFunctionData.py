@@ -16,27 +16,18 @@ def get_function_data(repo_path='../inputData/testRepo'):
     merge_commits = [commit for commit in repo.iter_commits('main') if commit.parents and len(commit.parents) > 1]
     merge_commits.reverse()
 
-    def create_temp_file_and_get_ast(file_content, temp_file_path='temp.js'):
-        with open(temp_file_path, 'w') as f:
-            f.write(file_content)
-        ast = get_ast_from_js(file_content, temp_file_path)
-        if os.path.exists(temp_file_path):
-            os.remove(temp_file_path)  # Clean up the temporary file
-        return ast
-
-    def get_ast_from_js(file_content, temp_file_path):
-        with open(temp_file_path, 'w') as temp_file:
-            temp_file.write(file_content)
-        result = subprocess.run(['node', 'babelParser.js', temp_file_path], capture_output=True, text=True)
-        if result.stderr:
-            print("Error in parsing:", result.stderr)
+    def get_ast_from_js(file_content):
+        process = subprocess.Popen(['node', 'babelParser.js'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        stdout, stderr = process.communicate(input=file_content)
+        if stderr:
+            print("Error in parsing:", stderr)
             return None
-        return json.loads(result.stdout)
+        return json.loads(stdout)
 
     def get_functions_from_file(file_content):
 
         # create ast from file content
-        ast = create_temp_file_and_get_ast(file_content)
+        ast = get_ast_from_js(file_content)
 
         functions = []
         try:
@@ -106,7 +97,7 @@ def get_function_data(repo_path='../inputData/testRepo'):
         file_content = blob.data_stream.read().decode('utf-8')
 
         # create ast from file content
-        ast = create_temp_file_and_get_ast(file_content)
+        ast = get_ast_from_js(file_content)
 
         try:
             # Define a function to recursively search for the function
@@ -153,6 +144,7 @@ def get_function_data(repo_path='../inputData/testRepo'):
 
 
     for commit in merge_commits:
+        print(f"Processing merge commit {commit.hexsha}")
         for file_path in commit.stats.files:
             if file_path.endswith('.js'):
                 try:
@@ -177,6 +169,7 @@ def get_function_data(repo_path='../inputData/testRepo'):
                         continue
 
     for commit in repo.iter_commits('main', reverse=True):  # Iterate from the oldest to newest commit
+        print(f"Processing commit {commit.hexsha}")
         for file_path in commit.stats.files:
             if file_path.endswith('.js'):
                 try:
@@ -208,7 +201,7 @@ def get_function_data(repo_path='../inputData/testRepo'):
 
 if __name__ == '__main__':
     start_time = time.time()
-    get_function_data() #pass this variable if you want to run another repo than testRepo: repo_path='../inputData/elixirsolutions'
+    get_function_data(repo_path='../inputData/elixirsolutions') #pass this variable if you want to run another repo than testRepo: repo_path='../inputData/elixirsolutions'
     end_time = time.time()
     elapsed_time = round((end_time - start_time) / 60, 2)  # convert to minutes and round to 2 decimal places
     print('✅ Printed function data to outputData/test_function_changes.json ✅')
