@@ -1,4 +1,5 @@
 import unittest
+import time
 import test_get_function_data
 import getFunctionData
 import createEmbeddings
@@ -21,6 +22,10 @@ def main(repo_path='../inputData/testRepo'):
     test_get_function_data.CustomTestRunner().run(suite)
 
 if __name__ == '__main__':
+    start_time = time.time()
      # pass this variable if you want to run another repo than testRepo: 
      # repo_path='../inputData/elixirsolutions'
     main()
+    end_time = time.time()
+    elapsed_time = round((end_time - start_time) / 60, 2)  # convert to minutes and round to 2 decimal places
+    print(f'⏰ The program took {elapsed_time} minutes to run. ⏰')
