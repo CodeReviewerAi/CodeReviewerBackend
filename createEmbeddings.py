@@ -10,7 +10,6 @@ from qdrant_client.models import CollectionDescription, Distance, VectorParams, 
 def embed_sample_functions(repo_path):
     # Initialize Qdrant Client
     client = QdrantClient(host='localhost', port=6333)
-    # client = QdrantClient(":memory:")
 
     # Set the OpenAI API key using the environment variable
     dotenv.load_dotenv()
@@ -24,6 +23,7 @@ def embed_sample_functions(repo_path):
     # Specify the embedding model
     model = "text-embedding-ada-002"
 
+    # Ensure the collection exists in Qdrant
     if client.get_collections().collections.__contains__(CollectionDescription(name='functions')):
         client.recreate_collection(
             collection_name="functions",
@@ -40,14 +40,16 @@ def embed_sample_functions(repo_path):
                 distance=Distance.COSINE
             )
         )
+        
+    # Process functions in batches of 3
+    function_batches = [list(json_data.items())[i:i + 3] for i in range(0, len(json_data), 3)]
 
-    # Process each function in the JSON data
-    for function_name, function_data in list(json_data.items())[:5]: # Limit to 5 functions for testing should be #for function_name, function_data in json_data.items():
-        input_text = function_data['merged_function']
+    for batch in function_batches:
+        inputs = [func_data['merged_function'] for _, func_data in batch]
 
         # Create the data for the POST request
         data = {
-            "input": input_text,
+            "input": inputs,
             "model": model
         }
 
@@ -60,26 +62,30 @@ def embed_sample_functions(repo_path):
             },
             data=json.dumps(data)
         )
-        embedding = response.json()['data'][0]['embedding']
 
-        #create the random id
-        id = random.randint(0,1000000)
+        embeddings = response.json()['data']
 
-        # create the payload
-        payload = {
-            "function_name": function_name,
-            "score": function_data['score'],
-        }
+        for i, (function_name, function_data) in enumerate(batch):
+            embedding = embeddings[i]['embedding']
 
-        # Add the embedding to Qdrant
-        client.upload_records(
-            collection_name="functions",
-            records=[
-                Record(
-                    id=id,
-                    vector=embedding,
-                    payload=payload
-                )
-            ]
-        )
-        print(f"Added function '{function_name}' to Qdrant with ID {id}")
+            # create the random id
+            id = random.randint(0,1000000)
+
+            # create the payload
+            payload = {
+                "function_name": function_name,
+                "score": function_data['score'],
+            }
+
+            # Add the embedding to Qdrant
+            client.upload_records(
+                collection_name="functions",
+                records=[
+                    Record(
+                        id=id,
+                        vector=embedding,
+                        payload=payload
+                    )
+                ]
+            )
+            print(f"Added function '{function_name}' to Qdrant with ID {id}")
