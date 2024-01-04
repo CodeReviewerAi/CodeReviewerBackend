@@ -16,16 +16,28 @@ def get_function_data(repo_path='../inputData/testRepo'):
     merge_commits = [commit for commit in repo.iter_commits('main') if commit.parents and len(commit.parents) > 1]
     merge_commits.reverse()
 
+    ast_cache = {}
+
     def get_ast_from_js(file_content):
+        # Generate a hash of the file content
+        content_hash = hash(file_content)
+
+        # Check if the AST is already in the cache
+        if content_hash in ast_cache:
+            return ast_cache[content_hash]
+
         process = subprocess.Popen(['node', 'babelParser.js'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         stdout, stderr = process.communicate(input=file_content)
         if stderr:
             print("Error in parsing:", stderr)
             return None
-        return json.loads(stdout)
+
+        # Parse the output and store the AST in the cache
+        ast = json.loads(stdout)
+        ast_cache[content_hash] = ast
+        return ast
 
     def get_functions_from_file(file_content):
-
         # create ast from file content
         ast = get_ast_from_js(file_content)
 
@@ -199,7 +211,7 @@ def get_function_data(repo_path='../inputData/testRepo'):
 
 if __name__ == '__main__':
     start_time = time.time()
-    get_function_data(repo_path='../inputData/elixirsolutions') #pass this variable if you want to run another repo than testRepo: repo_path='../inputData/elixirsolutions'
+    get_function_data() #pass this variable if you want to run another repo than testRepo: repo_path='../inputData/elixirsolutions'
     end_time = time.time()
     elapsed_time = round((end_time - start_time) / 60, 2)  # convert to minutes and round to 2 decimal places
     print('✅ Printed function data to outputData/test_function_changes.json ✅')
