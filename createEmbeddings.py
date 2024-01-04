@@ -41,7 +41,7 @@ def embed_sample_functions(repo_path):
             )
         )
         
-    # Process functions in batches of 3
+    # Process functions in batches of 3, three is set as arbitrary number maybe it can be increased
     function_batches = [list(json_data.items())[i:i + 3] for i in range(0, len(json_data), 3)]
 
     for batch in function_batches:
