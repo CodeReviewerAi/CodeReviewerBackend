@@ -144,7 +144,6 @@ def get_function_data(repo_path='../inputData/testRepo'):
 
 
     for commit in merge_commits:
-        print(f"Processing merge commit {commit.hexsha}")
         for file_path in commit.stats.files:
             if file_path.endswith('.js'):
                 try:
@@ -169,7 +168,6 @@ def get_function_data(repo_path='../inputData/testRepo'):
                         continue
 
     for commit in repo.iter_commits('main', reverse=True):  # Iterate from the oldest to newest commit
-        print(f"Processing commit {commit.hexsha}")
         for file_path in commit.stats.files:
             if file_path.endswith('.js'):
                 try:
