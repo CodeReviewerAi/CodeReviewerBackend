@@ -201,7 +201,7 @@ def get_function_data(repo_path='../inputData/testRepo'):
                     continue
 
     # Normalize the change counts to a score between -1 and 1
-    # functions = normalize_change_counts(functions)
+    functions = normalize_change_counts(functions)
 
     # Convert datetime objects to string before saving
     for func in functions.values():
@@ -222,7 +222,7 @@ def get_function_data(repo_path='../inputData/testRepo'):
 
 if __name__ == '__main__':
     start_time = time.time()
-    get_function_data(repo_path='../inputData/trainingData/danaher-ls-aem') #pass this variable if you want to run another repo than testRepo: repo_path='../inputData/elixirsolutions'
+    get_function_data() #pass this variable if you want to run another repo than testRepo: repo_path='../inputData/elixirsolutions'
     end_time = time.time()
     elapsed_time = round((end_time - start_time) / 60, 2)  # convert to minutes and round to 2 decimal places
     print('✅ Printed function data to outputData/test_function_changes.json ✅')
