@@ -8,7 +8,9 @@ from userInput import processUserInput
 def main(repo_path='../inputData/testRepo'):
     # Run the main function from getFunctionData
     getFunctionData.get_function_data(repo_path)
-
+    
+    # Remeber to normalize the scores for the jsons created by getFunctionData
+    
     # Run the main function from createEmbeddings
     createEmbeddings.embed_sample_functions(repo_path)
 

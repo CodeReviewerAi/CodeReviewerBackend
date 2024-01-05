@@ -1,7 +1,7 @@
 import json
 from processUserInput import process_user_input  
 
-def evaluate_model_accuracy(test_data_path, merge_threshold=0):
+def evaluate_model_accuracy(test_data_path, merge_threshold=-0.6):
     with open(test_data_path, 'r') as file:
         test_data = json.load(file)
 

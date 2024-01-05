@@ -31,7 +31,7 @@ def process_user_input(input_function):
         embedding = response.json()['data'][0]['embedding']
         return embedding
 
-    def performKNNSearch(embedding, k=5, merge_threshold=0):
+    def performKNNSearch(embedding, k=5, merge_threshold=-0.6):
         # Initialize the Qdrant client
         client = QdrantClient(host='localhost', port=6333)
 
