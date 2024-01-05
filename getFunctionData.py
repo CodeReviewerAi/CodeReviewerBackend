@@ -87,22 +87,6 @@ def get_function_data(repo_path='../inputData/testRepo'):
             print(f"Error processing AST: {e}")
         return functions
     
-    def normalize_change_counts(functions):
-        # Find the min and max changes after merge
-        min_changes = min(functions.values(), key=lambda x: x['changes_after_merge'])['changes_after_merge']
-        max_changes = max(functions.values(), key=lambda x: x['changes_after_merge'])['changes_after_merge']
-
-        # Normalize the change counts between -1 and 1
-        for func_key, func_info in functions.items():
-            if max_changes != min_changes:
-                normalized_score = 2 * ((func_info['changes_after_merge'] - min_changes) / (max_changes - min_changes)) - 1
-            else:
-                normalized_score = 0
-            func_info['score'] = normalized_score
-
-        return functions
-
-
     def get_full_function_at_commit(repo, commit_hash, function_name, file_path):
         commit = repo.commit(commit_hash)
         blob = commit.tree / file_path
@@ -200,8 +184,6 @@ def get_function_data(repo_path='../inputData/testRepo'):
                     print(f"Error processing commit {commit.hexsha}: {e}")
                     continue
 
-    # Normalize the change counts to a score between -1 and 1
-    functions = normalize_change_counts(functions)
 
     # Convert datetime objects to string before saving
     for func in functions.values():

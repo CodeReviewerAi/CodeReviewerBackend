@@ -24,4 +24,4 @@ def evaluate_model_accuracy(test_data_path, merge_threshold=0):
 
 if __name__ == '__main__':
     accuracy = evaluate_model_accuracy('../dataForTesting/testing.json')
-    print(f"Model Accuracy: {accuracy:.2f}")
+    print(f"Model Accuracy: {accuracy * 100:.2f}%")
