@@ -1,0 +1,1 @@
+#Todo: Normalize the score for training data so that min and max are uses from one repo
