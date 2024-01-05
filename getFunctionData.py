@@ -156,6 +156,7 @@ def get_function_data(repo_path='../inputData/testRepo'):
 
 
     for commit in merge_commits:
+        print(f"Processing merge commit {commit.hexsha}")
         for file_path in commit.stats.files:
             if file_path.endswith('.js'):
                 try:
@@ -180,6 +181,7 @@ def get_function_data(repo_path='../inputData/testRepo'):
                         continue
 
     for commit in repo.iter_commits('main', reverse=True):  # Iterate from the oldest to newest commit
+        print(f"Processing commit {commit.hexsha}")
         for file_path in commit.stats.files:
             if file_path.endswith('.js'):
                 try:
@@ -199,19 +201,28 @@ def get_function_data(repo_path='../inputData/testRepo'):
                     continue
 
     # Normalize the change counts to a score between -1 and 1
-    functions = normalize_change_counts(functions)
+    # functions = normalize_change_counts(functions)
 
     # Convert datetime objects to string before saving
     for func in functions.values():
         func['time_first_merged'] = func['time_first_merged'].isoformat()
 
-    # Save the functions and their change counts and normalized scores into a file
+    # Save only specific keys in the JSON file
+    filtered_functions = {}
+    for func_key, func_info in functions.items():
+        filtered_functions[func_key] = {
+            'changes_after_merge': func_info['changes_after_merge'],
+            'file_path': func_info['file_path'],
+            'merged_function': func_info['merged_function'],
+        }
+
+    # Save the filtered data into a file
     with open(output_file, 'w') as f:
-        json.dump(functions, f, indent=4)
+        json.dump(filtered_functions, f, indent=4)
 
 if __name__ == '__main__':
     start_time = time.time()
-    get_function_data() #pass this variable if you want to run another repo than testRepo: repo_path='../inputData/elixirsolutions'
+    get_function_data(repo_path='../inputData/trainingData/danaher-ls-aem') #pass this variable if you want to run another repo than testRepo: repo_path='../inputData/elixirsolutions'
     end_time = time.time()
     elapsed_time = round((end_time - start_time) / 60, 2)  # convert to minutes and round to 2 decimal places
     print('✅ Printed function data to outputData/test_function_changes.json ✅')

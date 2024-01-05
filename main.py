@@ -29,3 +29,16 @@ if __name__ == '__main__':
     end_time = time.time()
     elapsed_time = round((end_time - start_time) / 60, 2)  # convert to minutes and round to 2 decimal places
     print(f'⏰ The program took {elapsed_time} minutes to run. ⏰')
+    
+    
+# Training Data Repositories:
+# Big Repo: '../inputData/trainingData/danaher-ls-aem' !
+# Big Repo: '../inputData/trainingData/moleculardevices'
+# medium Repo: '../inputData/trainingData/petplace'
+# small Repo: '../inputData/trainingData/walgreens'
+# medium Repo: '../inputData/trainingData/theplayers'
+# medium Repo: '../inputData/trainingData/mammotome'
+# small Repo: '../inputData/trainingData/24petwatch'
+
+# Test Data Repositories:
+# '../inputData/testData/elixirsolutions'

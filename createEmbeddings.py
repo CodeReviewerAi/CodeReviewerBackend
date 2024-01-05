@@ -24,15 +24,7 @@ def embed_sample_functions(repo_path):
     model = "text-embedding-ada-002"
 
     # Ensure the collection exists in Qdrant
-    if client.get_collections().collections.__contains__(CollectionDescription(name='functions')):
-        client.recreate_collection(
-            collection_name="functions",
-            vectors_config=VectorParams(
-                size=1536,
-                distance=Distance.COSINE
-            )
-        )
-    else:
+    if not client.get_collections().collections.__contains__(CollectionDescription(name='functions')):
         client.create_collection(
             collection_name="functions",
             vectors_config=VectorParams(
@@ -40,7 +32,7 @@ def embed_sample_functions(repo_path):
                 distance=Distance.COSINE
             )
         )
-        
+            
     # Process functions in batches of 3, three is set as arbitrary number maybe it can be increased
     function_batches = [list(json_data.items())[i:i + 3] for i in range(0, len(json_data), 3)]
 
