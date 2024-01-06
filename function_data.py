@@ -5,9 +5,9 @@ import time
 import subprocess
 
 def get_function_data(repo_path='../inputData/testRepo'):
-    output_file = 'outputData/test_function_changes.json' if repo_path.endswith('testRepo') else 'outputData/function_changes.json'
     script_dir = os.path.dirname(os.path.abspath(__file__))
     repo_path = os.path.join(script_dir, repo_path)
+    repo_name = os.path.basename(repo_path)  # Extract the repository name
     repo = git.Repo(repo_path)
 
     repo.git.checkout('main')
@@ -136,9 +136,6 @@ def get_function_data(repo_path='../inputData/testRepo'):
 
     functions = {}
 
-
-
-
     for commit in merge_commits:
         print(f"Processing merge commit {commit.hexsha}")
         for file_path in commit.stats.files:
@@ -189,18 +186,17 @@ def get_function_data(repo_path='../inputData/testRepo'):
     for func in functions.values():
         func['time_first_merged'] = func['time_first_merged'].isoformat()
 
-    # Save only specific keys in the JSON file
-    filtered_functions = {}
+    # Filtered data structured by repository
+    repo_data = {repo_name: {}}
     for func_key, func_info in functions.items():
-        filtered_functions[func_key] = {
+        repo_data[repo_name][func_key] = {
             'changes_after_merge': func_info['changes_after_merge'],
             'file_path': func_info['file_path'],
+            'function_name': func_info['function_name'],   
             'merged_function': func_info['merged_function'],
         }
 
-    # Save the filtered data into a file
-    with open(output_file, 'w') as f:
-        json.dump(filtered_functions, f, indent=4)
+    return repo_data
 
 if __name__ == '__main__':
     start_time = time.time()

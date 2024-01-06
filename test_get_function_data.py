@@ -13,8 +13,8 @@ class TestFunctionData(unittest.TestCase):
         function_data.get_function_data()
 
         # Load the function changes data
-        with open('./outputData/test_function_changes.json', 'r') as file:
-            cls.function_data = json.load(file)
+        with open('./dataForTesting/test_function_changes.json', 'r') as file:
+            cls.function_data = json.load(file)['testRepo']  # Access the data within 'testRepo'
 
     def test_createdWithMergeAndNotChangedAfter(self):
         # Define the expected function key and content
