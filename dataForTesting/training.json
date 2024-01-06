@@ -1,0 +1,39 @@
+{
+    "testRepo": {
+        "blocks/test.js::createdWithMergeAndNotChangedAfter": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/test.js",
+            "function_name": "createdWithMergeAndNotChangedAfter",
+            "merged_function": "function createdWithMergeAndNotChangedAfter() {\n    console.log('This creates the function on test branch')\n    console.log('Second change on test branch')\n}",
+            "score": -1.0
+        },
+        "blocks/test.js::CreatedOnMainAndNotChangedAfterMerge": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/test.js",
+            "function_name": "CreatedOnMainAndNotChangedAfterMerge",
+            "merged_function": "function CreatedOnMainAndNotChangedAfterMerge() {\n    console.log('This creates the function on main branch')\n    console.log('First change on test branch')\n    console.log('Second change on test branch')\n}",
+            "score": -1.0
+        },
+        "blocks/test.js::createdWithMergeAndChangedAfterMerge": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/test.js",
+            "function_name": "createdWithMergeAndChangedAfterMerge",
+            "merged_function": "function createdWithMergeAndChangedAfterMerge() {\n    console.log('This creates the function on test branch')\n    console.log('second change on test branch')\n}",
+            "score": 0.26185950714291484
+        },
+        "blocks/test.js::createdOnMainAndChangedAfterWithMerge": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/test.js",
+            "function_name": "createdOnMainAndChangedAfterWithMerge",
+            "merged_function": "function createdOnMainAndChangedAfterWithMerge() {\n    console.log('This creates the function on main branch')\n    console.log('First change on test branch')\n    console.log('Second change on test branch')\n}",
+            "score": 0.26185950714291484
+        },
+        "blocks/test.js::test_changedAfterMergeWithMerge": {
+            "changes_after_merge": 2,
+            "file_path": "blocks/test.js",
+            "function_name": "test_changedAfterMergeWithMerge",
+            "merged_function": "function test_changedAfterMergeWithMerge() {\n    console.log('This creates the function')\n    console.log('Second change on test branch')\n}",
+            "score": 1.0
+        }
+    }
+}

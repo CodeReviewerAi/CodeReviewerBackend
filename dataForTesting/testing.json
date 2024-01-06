@@ -1,0 +1,970 @@
+{
+    "elixirsolutions": {
+        "blocks/accordion/accordion.js::buildSubAccordion": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/accordion/accordion.js",
+            "merged_function": "buildSubAccordion = async (parentPanel, blockTable) => {\n  const block = buildBlock('accordion', blockTable);\n  block.classList.add('sub-accordion');\n  parentPanel.append(block);\n  decorateBlock(block);\n  await loadBlock(block);\n}",
+            "score": -1.0
+        },
+        "blocks/accordion/accordion.js::buildSubAccordions": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/accordion/accordion.js",
+            "merged_function": "buildSubAccordions = async (parentPanel) => {\n  const blockTable = [];\n  let row;\n  [...parentPanel.children].forEach((child) => {\n    if (child.nodeName === 'H3') {\n      if (row) {\n        blockTable.push([{ elems: row }]);\n      }\n      row = [];\n    }\n\n    if (row) {\n      row.push(child);\n    }\n  });\n  // add last row\n  if (row) {\n    blockTable.push([{ elems: row }]);\n    await buildSubAccordion(parentPanel, blockTable);\n  }\n}",
+            "score": -1.0
+        },
+        "blocks/accordion/accordion.js::decorate": {
+            "changes_after_merge": 2,
+            "file_path": "blocks/accordion/accordion.js",
+            "merged_function": "async function decorate(block) {\n  block.dataset.accordionIndex = accordionIndex;\n  accordionIndex += 1;\n  const rows = [...block.children];\n  for (let i = 0; i < rows.length; i += 1) {\n    const row = rows[i];\n    row.classList.add('accordion-item');\n    const panel = row.children[0];\n    const buttonSelector = block.classList.contains('sub-accordion') ? 'h3' : 'h2';\n    const header = panel.querySelector(buttonSelector);\n    row.prepend(header);\n    const headerText = header.textContent;\n    header.innerHTML = '';\n    const button = document.createElement('button');\n    button.classList.add('accordion-trigger');\n    button.setAttribute('aria-expanded', 'false');\n    button.setAttribute('aria-controls', `accordion-panel-${block.dataset.accordionIndex}-${i}`);\n    button.setAttribute('id', `accordion-${block.dataset.accordionIndex}-${i}`);\n    const title = document.createElement('span');\n    title.classList.add('accordion-title');\n    title.textContent = headerText;\n    button.append(title);\n    header.append(button);\n    panel.classList.add('accordion-panel');\n    panel.setAttribute('id', `accordion-panel-${block.dataset.accordionIndex}-${i}`);\n    panel.setAttribute('role', 'region');\n    panel.setAttribute('aria-labelledby', `accordion-${block.dataset.accordionIndex}-${i}`);\n    panel.setAttribute('hidden', '');\n    // auto open first panel\n    if (i === 0) toggle(row);\n\n    button.addEventListener('click', () => {\n      toggle(row);\n    });\n\n    // build sub-accordions from panel\n    if (panel.querySelector(':scope > h3')) {\n      // eslint-disable-next-line no-await-in-loop\n      await buildSubAccordions(panel);\n    }\n  }\n}",
+            "score": -0.1674206722684014
+        },
+        "blocks/accordion/accordion.js::toggle": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/accordion/accordion.js",
+            "merged_function": "toggle = (item) => {\n  const trigger = item.querySelector('.accordion-trigger');\n  const panel = item.querySelector('.accordion-panel');\n  const isOpen = trigger.getAttribute('aria-expanded') === 'true';\n  trigger.setAttribute('aria-expanded', isOpen ? 'false' : 'true');\n  if (isOpen) {\n    panel.setAttribute('hidden', '');\n  } else {\n    panel.removeAttribute('hidden');\n  }\n}",
+            "score": -1.0
+        },
+        "blocks/blog-byline/blog-byline.js::buildBylineAuthor": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/blog-byline/blog-byline.js",
+            "merged_function": "function buildBylineAuthor(block, authorIds, lookupData) {\n  const authorIdList = authorIds.replaceAll(' ', '').split(',');\n  const grpAuthors = lookupData\n    .filter((p) => authorIdList.includes(p.personId));\n\n  if (grpAuthors.length > 0) {\n    const dtEl = createElement('dt', 'blog-byline-author', null, 'By: ');\n    block.append(dtEl);\n\n    grpAuthors.forEach((author) => {\n      const ddEl = createElement('dd', 'blog-byline-author');\n      if (author.url !== 'N/A') {\n        const linkEl = createElement('a', null, { href: author.url }, author.displayName);\n        ddEl.append(linkEl);\n      } else {\n        ddEl.append(`${author.displayName}`);\n      }\n\n      block.append(ddEl);\n    });\n  } else {\n    buildBylineAuthorDefault(block);\n  }\n}",
+            "score": -1.0
+        },
+        "blocks/blog-byline/blog-byline.js::buildBylineAuthorDefault": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/blog-byline/blog-byline.js",
+            "merged_function": "function buildBylineAuthorDefault(block) {\n  const dtEl = createElement('dt', 'blog-byline-author', null, 'By: ');\n  block.append(dtEl);\n  const ddEl = createElement('dd', 'blog-byline-author');\n  ddEl.append('Elixir');\n  block.append(ddEl);\n}",
+            "score": -1.0
+        },
+        "blocks/blog-byline/blog-byline.js::buildBylineIcon": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/blog-byline/blog-byline.js",
+            "merged_function": "async function buildBylineIcon(block) {\n  const icon = createElement('span', ['icon', 'icon-document-approval']);\n  block.insertAdjacentElement('beforeend', icon);\n  await decorateIcons(block);\n}",
+            "score": -1.0
+        },
+        "blocks/blog-byline/blog-byline.js::buildBylinePublishDate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/blog-byline/blog-byline.js",
+            "merged_function": "function buildBylinePublishDate(block, publishDate) {\n  const longDateFormat = getBlogLongDateFormat(publishDate);\n  const dashedDateFormat = getTimeElementFormat(publishDate);\n\n  const timeEl = createElement('time', null, {\n    datetime: dashedDateFormat,\n  }, longDateFormat);\n\n  const dtEl = createElement('dt', 'blog-byline-date', null, 'Published: ');\n  block.append(dtEl);\n\n  const ddEl = createElement('dd', 'blog-byline-date');\n  ddEl.append(timeEl);\n  block.append(ddEl);\n}",
+            "score": -1.0
+        },
+        "blocks/blog-byline/blog-byline.js::buildBylineReviewer": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/blog-byline/blog-byline.js",
+            "merged_function": "function buildBylineReviewer(block, rewiewerIds, lookupData) {\n  const reviewerIdList = rewiewerIds.replaceAll(' ', '').split(',');\n  const grpReviewers = lookupData\n    .filter((p) => reviewerIdList.includes(p.personId));\n\n  if (grpReviewers.length > 0) {\n    const dtEl = createElement('dt', 'blog-byline-clinician', null, 'Clinically reviewed by: ');\n    block.append(dtEl);\n\n    grpReviewers.forEach((reviewer) => {\n      const ddEl = createElement('dd', 'blog-byline-clinician');\n      if (reviewer.url !== 'N/A') {\n        const linkEl = createElement('a', null, { href: reviewer.url }, reviewer.displayName);\n        ddEl.append(linkEl);\n      } else {\n        ddEl.append(`${reviewer.displayName}`);\n      }\n\n      block.append(ddEl);\n    });\n  }\n}",
+            "score": -1.0
+        },
+        "blocks/blog-byline/blog-byline.js::decorate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/blog-byline/blog-byline.js",
+            "merged_function": "async function decorate(block) {\n  const metaDateStr = getMetadata('publication-date');\n  const publishDate = getMetadataDate(metaDateStr);\n\n  const author = getMetadata('author');\n  const reviewer = getMetadata('reviewer');\n\n  if (!publishDate && !author && !reviewer) return;\n\n  const h2El = createElement('h2', 'sr-only', null, 'Author(s) and publish date');\n  block.append(h2El);\n\n  const byline = createElement('div', 'blog-byline-meta');\n\n  buildBylineIcon(byline);\n\n  const dlEl = createElement('dl');\n  byline.append(dlEl);\n\n  buildBylinePublishDate(dlEl, publishDate);\n\n  let lookupData;\n  if (author || reviewer) {\n    loadBlogAuthorCache();\n    lookupData = await blogAuthorsCache;\n  }\n\n  if (author) {\n    buildBylineAuthor(dlEl, author, lookupData);\n  } else {\n    buildBylineAuthorDefault(dlEl);\n  }\n\n  if (reviewer) {\n    buildBylineReviewer(dlEl, reviewer, lookupData);\n  }\n\n  block.append(byline);\n}",
+            "score": -1.0
+        },
+        "blocks/blog-byline/blog-byline.js::loadBlogAuthorCache": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/blog-byline/blog-byline.js",
+            "merged_function": "async function loadBlogAuthorCache() {\n  blogAuthorsCache = ffetch('/blog/blog-authors.json')\n    .chunks(1000)\n    .all();\n}",
+            "score": -1.0
+        },
+        "blocks/blog-cta/blog-cta.js::decorate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/blog-cta/blog-cta.js",
+            "merged_function": "function decorate() {}",
+            "score": -1.0
+        },
+        "blocks/blog-email-form/blog-email-form.js::decorate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/blog-email-form/blog-email-form.js",
+            "merged_function": "async function decorate(block) {\n  const placeholders = await fetchPlaceholders();\n  if (placeholders.blogForm) {\n    const url = new URL(placeholders.blogForm);\n    block.innerHTML = '';\n    const fragment = await loadFragment(url.pathname);\n    if (fragment) {\n      const fragmentSectionContainer = fragment.querySelector(':scope .section > .section-container');\n      if (fragmentSectionContainer) {\n        block.append(...fragmentSectionContainer.childNodes);\n      }\n    }\n  }\n}",
+            "score": -1.0
+        },
+        "blocks/blog-feed/blog-feed.js::buildBlogFeed": {
+            "changes_after_merge": 8,
+            "file_path": "blocks/blog-feed/blog-feed.js",
+            "merged_function": "async function buildBlogFeed(ul, pageNum, pageControl) {\n  const limit = 10;\n  const offset = pageNum * limit;\n  let morePages = false;\n  const blogPosts = ffetch('/query-index.json')\n    .filter((p) => p.path.startsWith('/blog/'))\n    .slice(offset, offset + limit + 1);\n\n  let i = 0;\n  const newUl = document.createElement('ul');\n  // eslint-disable-next-line no-restricted-syntax\n  for await (const post of blogPosts) {\n    if (i >= limit) {\n      // skip render, but know we have more page\n      morePages = true;\n      break;\n    }\n\n    const li = document.createElement('li');\n    li.append(buildPost(post, i < 1));\n    newUl.append(li);\n\n    i += 1;\n  }\n\n  pageControl.innerHTML = `\n      <ul class=\"pages\">\n        <li class=\"prev\"><a data-page=\"${pageNum - 1}\" href=\"${window.location.pathname}?page=${pageNum}\"><span class=\"icon icon-next\"><span class=\"sr-only\">Previous Page</span></a></li>\n        <li class=\"cur\"><span>${pageNum + 1}</span></li>\n        <li class=\"next\"><a data-page=\"${pageNum + 1}\" href=\"${window.location.pathname}?page=${pageNum + 2}\"><span class=\"icon icon-next\"></span><span class=\"sr-only\">Next Page</span></a></li>\n      </ul>\n    `;\n\n  if (pageNum === 0) {\n    pageControl.querySelector('.prev').remove();\n  }\n\n  if (!morePages) {\n    pageControl.querySelector('.next').remove();\n  }\n\n  pageControl.querySelectorAll('li > a').forEach((link) => {\n    link.addEventListener('click', (evt) => {\n      evt.preventDefault();\n      buildBlogFeed(ul, Number(link.dataset.page), pageControl);\n    });\n  });\n\n  decorateIcons(pageControl);\n  ul.innerHTML = newUl.innerHTML;\n  window.scrollTo({\n    top: 0,\n    behavior: 'smooth',\n  });\n}",
+            "score": 0.6651586554631972
+        },
+        "blocks/blog-feed/blog-feed.js::buildMiniFeed": {
+            "changes_after_merge": 8,
+            "file_path": "blocks/blog-feed/blog-feed.js",
+            "merged_function": "async function buildMiniFeed(block, ul) {\n  const blogPosts = ffetch('/query-index.json')\n    .filter((p) => p.path.startsWith('/blog/'))\n    .slice(0, 4);\n\n  let i = 0;\n  // eslint-disable-next-line no-restricted-syntax\n  for await (const post of blogPosts) {\n    const li = document.createElement('li');\n    if (i === 0) {\n      const callout = buildPost(post);\n      callout.classList.add('blog-post-callout-card');\n      block.prepend(callout);\n    } else {\n      li.append(buildSmallPost(post));\n      ul.append(li);\n    }\n\n    i += 1;\n  }\n\n  const formWrapper = document.createElement('div');\n  // todo add insight form block\n  block.append(formWrapper);\n}",
+            "score": 0.6651586554631972
+        },
+        "blocks/blog-feed/blog-feed.js::buildPost": {
+            "changes_after_merge": 7,
+            "file_path": "blocks/blog-feed/blog-feed.js",
+            "merged_function": "function buildPost(post, eager) {\n  const postCard = document.createElement('div');\n  postCard.classList.add('blog-post-card');\n\n  postCard.innerHTML = `\n      <div class=\"blog-post-image\">\n        <a href=\"${post.path}\">${createOptimizedPicture(post.image, `Teaser image for ${post.title}`, eager).outerHTML}</a>\n      </div>\n      <div class=\"blog-post-content\">\n        <a class=\"post-title\" href=\"${post.path}\">${post.title}</a>\n        <ul class=\"post-tags\">\n        </ul>\n        <a class=\"post-description\" href=\"${post.path}\">\n          <p>${post.description}</p>\n          <span>Read More</span>\n        </a>\n      </div>\n    </a>\n  `;\n\n  const tagsUl = postCard.querySelector('.post-tags');\n  const tags = JSON.parse(post.tags);\n  tags.forEach((tag) => {\n    const li = document.createElement('li');\n    li.innerHTML = `<a href=\"/blog/tag?tag=${encodeURIComponent(tag)}\"><span class=\"icon icon-tag\"></span>${tag}</a>`;\n    tagsUl.append(li);\n  });\n\n  decorateIcons(postCard);\n  return postCard;\n}",
+            "score": 0.5758972102231612
+        },
+        "blocks/blog-feed/blog-feed.js::buildSmallPost": {
+            "changes_after_merge": 3,
+            "file_path": "blocks/blog-feed/blog-feed.js",
+            "merged_function": "function buildSmallPost(post) {\n  const postCard = document.createElement('div');\n  postCard.classList.add('blog-post-card', 'blog-post-mini-card');\n\n  postCard.innerHTML = `\n    <div class=\"blog-post-content\">\n      <a class=\"post-title\" href=\"${post.path}\">${post.title}</a>\n      <p class=\"post-description\">${post.description}</p>\n    </div>\n  `;\n\n  return postCard;\n}",
+            "score": 0.050598140148774284
+        },
+        "blocks/blog-feed/blog-feed.js::decorate": {
+            "changes_after_merge": 8,
+            "file_path": "blocks/blog-feed/blog-feed.js",
+            "merged_function": "async function decorate(block) {\n  const small = block.classList.contains('mini');\n  const ul = document.createElement('ul');\n  ul.classList.add('blog-list');\n  block.append(ul);\n\n  if (small) {\n    await buildMiniFeed(block, ul);\n    return;\n  }\n\n  const pageControl = document.createElement('div');\n  pageControl.classList.add('blog-pages');\n  block.append(pageControl);\n\n  const usp = new URLSearchParams(window.location.search);\n  const page = usp.get('page');\n  const pageNum = Number(!page ? '0' : page - 1);\n  buildBlogFeed(ul, pageNum, pageControl);\n}",
+            "score": 0.6651586554631972
+        },
+        "blocks/blog-highlight/blog-highlight.js::decorate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/blog-highlight/blog-highlight.js",
+            "merged_function": "function decorate() {}",
+            "score": -1.0
+        },
+        "blocks/blog-socials/blog-socials.js::decorate": {
+            "changes_after_merge": 2,
+            "file_path": "blocks/blog-socials/blog-socials.js",
+            "merged_function": "function decorate(block) {\n  const topics = createElement('div');\n  const tags = document.querySelectorAll('head meta[property=\"article:tag\"]');\n  topics.append('Topics: ');\n  const tagLinks = [];\n  tags.forEach((tag) => tagLinks.push(`<a href=\"/blog/tag?tag=${encodeURIComponent(tag.content)}\">${tag.content}</a>`));\n\n  topics.innerHTML = `<p>\n    Topics: ${tagLinks.join(', ')}\n  </p>`;\n  block.append(topics);\n\n  const socials = createElement('div', '', {}, `\n    <div>\n      <a href=\"http://www.facebook.com/share.php?u=${window.location.href}&amp;utm_medium=social&amp;utm_source=facebook\" rel=\"noopener\">\n        <img src=\"/blocks/blog-socials/images/facebook.png\" alt=\"Share on facebook\">\n      </a>\n      <a href=\"http://www.linkedin.com/shareArticle?mini=true&amp;url=${window.location.href}&amp;utm_medium=social&amp;utm_source=linkedin\" rel=\"noopener\">\n        <img src=\"/blocks/blog-socials/images/linkedin.png\" alt=\"Share on linkedin\">\n      </a>\n      <a href=\"https://twitter.com/intent/tweet?original_referer=${window.location.href}&amp;utm_medium=social&amp;utm_source=twitter&amp;url=${window.location.href}&amp;utm_medium=social&amp;utm_source=twitter&amp;source=tweetbutton&amp;text=\" rel=\"noopener\">\n        <img src=\"/blocks/blog-socials/images/twitter.png\" alt=\"Share on twitter\">\n      </a>\n      <a href=\"mailto:?subject=Check%20out%20${window.location.href}&amp;utm_medium=social&amp;utm_source=email%20&amp;body=Check%20out%20${window.location.href}&amp;utm_medium=social&amp;utm_source=email\" rel=\"noopener\">\n        <img src=\"/blocks/blog-socials/images/email.png\" alt=\"Share on email\">\n      </a>\n      <a href=\"javascript:window.print()\" rel=\"noopener\">\n        <img src=\"/blocks/blog-socials/images/print.png\" alt=\"Share on print\">\n      </a>\n    </div>`);\n  block.append(socials);\n}",
+            "score": -0.1674206722684014
+        },
+        "blocks/breadcrumb/breadcrumb.js::createLink": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/breadcrumb/breadcrumb.js",
+            "merged_function": "createLink = (path) => {\n  const pathLink = document.createElement('a');\n  pathLink.href = path.url;\n  pathLink.innerText = path.name;\n  return pathLink;\n}",
+            "score": -1.0
+        },
+        "blocks/breadcrumb/breadcrumb.js::decorate": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/breadcrumb/breadcrumb.js",
+            "merged_function": "async function decorate(block) {\n  const breadcrumb = block.querySelector(':scope div');\n  const HomeLink = createLink({ path: '', name: 'Home', url: window.location.origin });\n  const breadcrumbLinks = [HomeLink.outerHTML];\n\n  window.setTimeout(async () => {\n    const path = window.location.pathname;\n    const paths = await getAllPathsExceptCurrent(path);\n\n    paths.forEach((pathPart) => breadcrumbLinks.push(createLink(pathPart).outerHTML));\n    const currentPath = document.createElement('span');\n    currentPath.innerText = document.querySelector('title').innerText;\n    breadcrumbLinks.push(currentPath.outerHTML);\n\n    const space = '&nbsp;&nbsp;&nbsp;';\n    breadcrumb.innerHTML = breadcrumbLinks.join(`${space}/${space}`);\n  }, 1000);\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/breadcrumb/breadcrumb.js::getAllPathsExceptCurrent": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/breadcrumb/breadcrumb.js",
+            "merged_function": "getAllPathsExceptCurrent = async (paths) => {\n  const result = [];\n  // remove first and last slash characters\n  const pathsList = paths.replace(/^\\/|\\/$/g, '').split('/');\n  for (let i = 0; i < pathsList.length - 1; i += 1) {\n    const pathPart = pathsList[i];\n    const prevPath = result[i - 1] ? result[i - 1].path : '';\n    const path = `${prevPath}/${pathPart}`;\n    const url = `${window.location.origin}${path}`;\n    /* eslint-disable-next-line no-await-in-loop */\n    const name = await getPageTitle(url);\n    result.push({ path, name, url });\n  }\n  return result;\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/breadcrumb/breadcrumb.js::getPageTitle": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/breadcrumb/breadcrumb.js",
+            "merged_function": "getPageTitle = async (url) => {\n  const resp = await fetch(url);\n  const html = document.createElement('div');\n  html.innerHTML = await resp.text();\n  return html.querySelector('title').innerText;\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/cards/cards.js::decorate": {
+            "changes_after_merge": 3,
+            "file_path": "blocks/cards/cards.js",
+            "merged_function": "function decorate(block) {\n  /* change to ul, li */\n  const ul = document.createElement('ul');\n\n  if (block.children.length % 4 === 0) {\n    block.classList.add('cards-four-up');\n  } else {\n    block.classList.add('cards-three-up');\n  }\n\n  [...block.children].forEach((row) => {\n    const li = document.createElement('li');\n    const cardButtonContainer = row.querySelector('.button-container');\n    const cardLink = cardButtonContainer.querySelector('a');\n    const clonedLink = cardLink.cloneNode(false);\n    clonedLink.className = 'card-link-wrapper';\n    cardButtonContainer.remove();\n    li.append(clonedLink);\n\n    [...row.children].forEach((div) => {\n      if (div.children.length === 1 && div.querySelector('picture')) {\n        div.className = 'cards-card-image';\n      } else {\n        div.className = 'cards-card-body';\n        div.insertAdjacentHTML('beforeEnd', `<span class=\"card-more-cta\">${clonedLink.title}</span>`);\n      }\n\n      clonedLink.append(div);\n    });\n    ul.append(li);\n  });\n  ul.querySelectorAll('img').forEach((img) => img.closest('picture').replaceWith(createOptimizedPicture(img.src, img.alt, false, [{ width: '750' }])));\n  block.textContent = '';\n  block.append(ul);\n}",
+            "score": 0.050598140148774284
+        },
+        "blocks/columns/columns.js::decorate": {
+            "changes_after_merge": 2,
+            "file_path": "blocks/columns/columns.js",
+            "merged_function": "function decorate(block) {\n  const cols = [...block.firstElementChild.children];\n  block.classList.add(`columns-${cols.length}-cols`);\n  const imgColClass = 'columns-img-col';\n\n  const isTeaser = block.classList.contains('teaser');\n\n  // teaser is also a variation of thirds\n  if (isTeaser) {\n    block.classList.add('thirds');\n  }\n\n  // setup image columns\n  [...block.children].forEach((row) => {\n    [...row.children].forEach((col) => {\n      const pic = col.querySelector('picture');\n      if (pic) {\n        const picWrapper = pic.closest('div');\n        // less than or equals to two in case image is wrapped with <a> tag\n        if (picWrapper && picWrapper.children.length <= 2) {\n          // picture is only content in column\n          picWrapper.classList.add(imgColClass);\n        }\n\n        if (isTeaser) {\n          const teaserWrapper = document.createElement('div');\n          teaserWrapper.classList.add('teaser-wrapper');\n          ['style-a', 'style-b', 'style-c'].forEach((style) => {\n            const bubble = document.createElement('span');\n            bubble.classList.add('bubble', style);\n            bubble.ariaHidden = true;\n            teaserWrapper.appendChild(bubble);\n          });\n          teaserWrapper.appendChild(pic);\n          col.appendChild(teaserWrapper);\n        }\n      }\n    });\n  });\n}",
+            "score": -0.1674206722684014
+        },
+        "blocks/error-gears/error-gears.js::decorate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/error-gears/error-gears.js",
+            "merged_function": "function decorate(block) {\n  block.innerHTML = `\n    <div class=\"gear one\">\n      <div class=\"bar\"></div>\n      <div class=\"bar\"></div>\n      <div class=\"bar\"></div>\n  </div>\n  <div class=\"gear two\">\n    <div class=\"bar\"></div>\n    <div class=\"bar\"></div>\n    <div class=\"bar\"></div>\n  </div>\n  <div class=\"gear three\">\n    <div class=\"bar\"></div>\n    <div class=\"bar\"></div>\n    <div class=\"bar\"></div>\n  </div>`;\n}",
+            "score": -1.0
+        },
+        "blocks/footer/footer.js::decorate": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/footer/footer.js",
+            "merged_function": "async function decorate(block) {\n  const cfg = readBlockConfig(block);\n  block.textContent = '';\n\n  // fetch footer content\n  const footerPath = cfg.footer || '/footer';\n  const resp = await fetch(`${footerPath}.plain.html`, window.location.pathname.endsWith('/footer') ? { cache: 'reload' } : {});\n\n  if (resp.ok) {\n    const html = await resp.text();\n\n    // decorate footer DOM\n    const footer = document.createElement('div');\n    footer.innerHTML = html;\n\n    // add classes to footer sections\n    const sectionNames = ['image', 'links', 'social', 'legal', 'copyright'];\n    sectionNames.forEach((c, i) => {\n      const section = footer.children[i];\n      if (section) section.classList.add(`footer-${c}`);\n    });\n\n    // structure upper footer\n    const upperFooterNames = ['image'];\n    const upperFooter = document.createElement('div');\n    upperFooter.classList.add('footer-upper');\n    const upperFooterContent = document.createElement('div');\n    upperFooterContent.classList.add('footer-upper-content');\n    upperFooterNames.forEach((c) => {\n      const section = footer.querySelector(`.footer-${c}`);\n      if (section) upperFooterContent.appendChild(section);\n    });\n    upperFooter.appendChild(upperFooterContent);\n    footer.appendChild(upperFooter);\n\n    // structure link container\n    const linksNames = ['links', 'social'];\n    const linksContainer = document.createElement('div');\n    linksContainer.classList.add('footer-links-container');\n    linksNames.forEach((c) => {\n      const section = footer.querySelector(`.footer-${c}`);\n      if (section) linksContainer.appendChild(section);\n    });\n    upperFooterContent.appendChild(linksContainer);\n    handleSocialLinks(linksContainer);\n\n    // structure lower footer\n    const lowerFooterNames = ['legal', 'copyright'];\n    const lowerFooter = document.createElement('div');\n    lowerFooter.classList.add('footer-lower');\n    const lowerFooterContent = document.createElement('div');\n    lowerFooterContent.classList.add('footer-lower-content');\n    lowerFooterNames.forEach((c) => {\n      const section = footer.querySelector(`.footer-${c}`);\n      if (section) lowerFooterContent.appendChild(section);\n    });\n    lowerFooter.appendChild(lowerFooterContent);\n    footer.appendChild(lowerFooter);\n\n    decorateIcons(footer);\n    decorateLinks(footer);\n    wrapImgsInLinks(footer);\n    block.append(footer);\n  }\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/footer/footer.js::handleSocialLinks": {
+            "changes_after_merge": 3,
+            "file_path": "blocks/footer/footer.js",
+            "merged_function": "handleSocialLinks = (block) => {\n  const footerSocialContainer = block.querySelector('.footer-social ul');\n  footerSocialContainer.classList.add('footer-social-container');\n  Object.values(footerSocialContainer.children).forEach((child) => {\n    const link = child.querySelector('a');\n    const host = (new URL(link.href).hostname).split('.');\n    const social = host[0] === 'www' ? host[1] : host[0];\n    link.classList.add('footer-social-icon');\n    link.innerText = '';\n    link.classList.add(`footer-social-icon-${social}`);\n    child.replaceWith(link);\n  });\n}",
+            "score": 0.050598140148774284
+        },
+        "blocks/form/form.js::buildCheckboxField": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/form/form.js",
+            "merged_function": "function buildCheckboxField(fieldDef) {\n  const fieldSet = createElement('fieldset');\n  const legend = createElement('legend', '', {}, fieldDef.Label);\n  fieldSet.append(legend);\n  const formGroup = createElement('div', 'form-group');\n  fieldSet.append(formGroup);\n  if (fieldDef.Style) formGroup.classList.add(`form-group-${fieldDef.Style}`);\n\n  const opts = fieldDef.Options.split(', ');\n  opts.forEach((o, i) => {\n    const control = createElement('div', ['custom-control', `custom-${fieldDef.Type}`]);\n    control.innerHTML = `\n      <input type=\"${fieldDef.Type}\" class=\"custom-control-input\" \n      data-id=\"${fieldDef.Field}\" id=\"${fieldDef.Field}-${i}\"\n      ${fieldDef.Mandatory ? 'required' : ''} value=\"${o}\"\n      ${fieldDef.Type === 'radio' ? `name=radio-${fieldDef.idx}` : ''}>\n      <label class=\"custom-control-label\" for=\"${fieldDef.Field}-${i}\">${o}</label>\n    `;\n\n    if (fieldDef.Type === 'checkbox') {\n      control.innerHTML += '<div class=\"invalid-feedback\">This checkbox is required</div>';\n    }\n    if (fieldDef.Type === 'radio' && i === (opts.length - 1)) {\n      control.innerHTML += '<div class=\"invalid-feedback\">Please make a selection</div>';\n    }\n    formGroup.append(control);\n  });\n\n  return fieldSet;\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/form/form.js::buildFormField": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/form/form.js",
+            "merged_function": "function buildFormField(fieldDef) {\n  fieldDef.Type = fieldDef.Type ? fieldDef.Type.toLowerCase() : 'text';\n\n  if (fieldDef.Type === 'radio' || fieldDef.Type === 'checkbox') {\n    return buildCheckboxField(fieldDef);\n  }\n  if (fieldDef.Type === 'select') {\n    return buildSelectField(fieldDef);\n  }\n  if (fieldDef.Type === 'submit') {\n    return buildSubmitField(fieldDef);\n  }\n\n  return buildInputField(fieldDef);\n}",
+            "score": -1.0
+        },
+        "blocks/form/form.js::buildInputField": {
+            "changes_after_merge": 2,
+            "file_path": "blocks/form/form.js",
+            "merged_function": "function buildInputField(fieldDef) {\n  const formGroup = createElement('div', 'form-group');\n\n  const inputAttrs = {\n    type: fieldDef.Type,\n    placeholder: fieldDef.Placeholder,\n  };\n  let inputTag = 'input';\n  if (fieldDef.Type === 'textarea') {\n    inputTag = 'textarea';\n    inputAttrs.rows = '3';\n  }\n  inputAttrs.id = `${fieldDef.Field}`;\n  if (fieldDef['Help Text']) {\n    const helpId = `form-${inputTag}Help${fieldDef.idx}`;\n    inputAttrs['aria-describedby'] = helpId;\n    const help = createElement('span', 'form-text', {\n      id: helpId,\n    }, fieldDef['Help Text']);\n    formGroup.append(help);\n  }\n  if (fieldDef.Mandatory) {\n    inputAttrs.required = '';\n  }\n  if (fieldDef.Type === 'currency') {\n    inputAttrs.step = '.01';\n    inputAttrs.type = 'number';\n  }\n  const input = createElement(inputTag, 'form-control', inputAttrs);\n  formGroup.append(input);\n\n  const labelText = `${fieldDef.Label} ${fieldDef.Mandatory ? '' : '<span>optional</span>'}`;\n  const label = createElement('label', '', {\n    for: inputAttrs.id,\n  }, labelText);\n  formGroup.prepend(label);\n\n  formGroup.insertAdjacentHTML('beforeend', `<div class=\"invalid-feedback\">This field is ${fieldDef.Mandatory ? 'required/' : ''}invalid</div>`);\n\n  return formGroup;\n}",
+            "score": -0.1674206722684014
+        },
+        "blocks/form/form.js::buildSelectField": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/form/form.js",
+            "merged_function": "function buildSelectField(fieldDef) {\n  const formGroup = createElement('div', 'form-group');\n\n  fieldDef.Placeholder = fieldDef.Placeholder || 'Please Select One';\n  formGroup.innerHTML = `\n  <label for=\"${fieldDef.Field}\">${fieldDef.Label} </label>\n  <select class=\"custom-select\" id=\"${fieldDef.Field}\">\n    <option selected disabled value=\"\">${fieldDef.Placeholder}</option>\n  </select>\n  <div class=\"invalid-feedback\">${fieldDef.Placeholder}</div>\n  `;\n\n  const select = formGroup.querySelector('select');\n  if (fieldDef['Help Text']) {\n    const helpId = `form-SelectHelp${fieldDef.idx}`;\n    select.setAttribute('aria-describedby', helpId);\n    const help = createElement('span', 'form-text', {\n      id: helpId,\n    }, fieldDef['Help Text']);\n    select.insertAdjacentElement('beforebegin', help);\n  }\n\n  if (fieldDef.Mandatory) {\n    select.setAttribute('required', '');\n  } else {\n    formGroup.querySelector('label').insertAdjacentHTML('beforeend', '<span>optional</span>');\n  }\n\n  const opts = fieldDef.Options.split(', ');\n  opts.forEach((o) => {\n    const opt = createElement('option', '', { value: o.toLowerCase().replaceAll(' ', '-') }, o);\n    select.append(opt);\n  });\n\n  return formGroup;\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/form/form.js::buildSubmitField": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/form/form.js",
+            "merged_function": "function buildSubmitField(fieldDef) {\n  const btn = createElement('button', ['button', 'button-primary'], {\n    type: 'submit',\n  }, fieldDef.Label);\n\n  btn.addEventListener('click', (evt) => {\n    evt.preventDefault();\n    const form = btn.closest('form');\n    if (form) {\n      form.classList.add('was-validated');\n    }\n    const valid = form.reportValidity();\n    if (valid) {\n      submitForm(form);\n    }\n  });\n\n  return btn;\n}",
+            "score": -1.0
+        },
+        "blocks/form/form.js::constructPayload": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/form/form.js",
+            "merged_function": "function constructPayload(form) {\n  const payload = {};\n  [...form.elements].forEach((fe) => {\n    if (fe.type === 'checkbox') {\n      if (fe.checked) {\n        let fieldVal = payload[fe.dataset.id];\n        if (!fieldVal) {\n          fieldVal = [];\n        } else {\n          fieldVal = JSON.parse(fieldVal);\n        }\n        fieldVal.push(fe.value);\n        payload[fe.dataset.id] = JSON.stringify(fieldVal);\n      }\n    } else if (fe.type === 'radio') {\n      if (fe.checked) {\n        payload[fe.dataset.id] = fe.value;\n      }\n    } else if (fe.id) {\n      payload[fe.id] = fe.value;\n    }\n  });\n  return payload;\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/form/form.js::createForm": {
+            "changes_after_merge": 3,
+            "file_path": "blocks/form/form.js",
+            "merged_function": "async function createForm(formURL) {\n  const { pathname } = new URL(formURL);\n  const resp = await fetch(pathname);\n  const json = await resp.json();\n  const form = document.createElement('form');\n  // eslint-disable-next-line prefer-destructuring\n  form.dataset.action = pathname.split('.json')[0];\n  json.data.forEach((fieldDef, i) => {\n    fieldDef.idx = i;\n    const formField = buildFormField(fieldDef);\n    form.append(formField);\n  });\n  return form;\n}",
+            "score": 0.050598140148774284
+        },
+        "blocks/form/form.js::decorate": {
+            "changes_after_merge": 7,
+            "file_path": "blocks/form/form.js",
+            "merged_function": "async function decorate(block) {\n  const cfg = readBlockConfig(block);\n  if (cfg.source && cfg.source.endsWith('.json')) {\n    const formEl = await createForm(cfg.source);\n    block.innerHTML = '';\n    block.append(formEl);\n    if (cfg['thank-you']) {\n      formEl.dataset.thankYou = cfg['thank-you'];\n    }\n\n    formEl.querySelectorAll('.form-control').forEach((ctrl) => {\n      ctrl.addEventListener('blur', () => {\n        const group = ctrl.closest('.form-group');\n        if (group) {\n          group.classList.add('was-validated');\n        }\n      });\n    });\n  }\n}",
+            "score": 0.5758972102231612
+        },
+        "blocks/form/form.js::submitForm": {
+            "changes_after_merge": 4,
+            "file_path": "blocks/form/form.js",
+            "merged_function": "async function submitForm(form) {\n  const payload = constructPayload(form);\n  const resp = await fetch(form.dataset.action, {\n    method: 'POST',\n    cache: 'no-cache',\n    headers: {\n      'Content-Type': 'application/json',\n    },\n    body: JSON.stringify({ data: payload }),\n  });\n  await resp.text();\n\n  if (form.dataset.thankYou) {\n    window.location.href = form.dataset.thankYou;\n  } else {\n    form.innerHTML = `\n      <p class=\"form-text\">Thank you for your submisison!</p>\n    `;\n  }\n  return payload;\n}",
+            "score": 0.21970666902392466
+        },
+        "blocks/form/form.js::submitHubspotForm": {
+            "changes_after_merge": 2,
+            "file_path": "blocks/form/form.js",
+            "merged_function": "async function submitHubspotForm(form, payload) {\n  const d = new Date();\n  const fields = Object.keys(payload).map((k) => {\n    const v = payload[k];\n    return {\n      objectTypeId: '0-1',\n      name: k,\n      value: v,\n    };\n  });\n\n  const cookies = decodeURIComponent(document.cookie);\n  let hsutk;\n  cookies.split(';').forEach((cookie) => {\n    const c = cookie.trim();\n    if (c.indexOf('hubspotutk') === 0) {\n      hsutk = c.substring('hubspotutk'.length + 1, c.length);\n    }\n  });\n\n  const hsPayload = {\n    submittedAt: d.getTime(),\n    fields,\n    context: {\n      hutk: hsutk,\n      pageUri: window.location.href,\n      pageName: document.querySelector('title').textContent,\n    },\n  };\n\n  const resp = fetch(`https://api.hsforms.com/submissions/v3/integration/submit/${form.dataset.portalId}/${form.dataset.guid}`, {\n    method: 'POST',\n    cache: 'no-cache',\n    headers: {\n      'Content-Type': 'application/json',\n    },\n    body: JSON.stringify(hsPayload),\n  });\n  return resp;\n}",
+            "score": -0.1674206722684014
+        },
+        "blocks/fragment/fragment.js::decorate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/fragment/fragment.js",
+            "merged_function": "async function decorate(block) {\n  const link = block.querySelector('a');\n  const path = link ? link.getAttribute('href') : block.textContent.trim();\n  const fragment = await loadFragment(path);\n  if (fragment) {\n    const fragmentSection = fragment.querySelector(':scope .section');\n    const fragmentSectionContainer = fragmentSection.querySelector('.section-container');\n    if (fragmentSection && fragmentSectionContainer) {\n      block.closest('.section').classList.add(...fragmentSection.classList);\n      block.closest('.fragment-wrapper').append(...fragmentSectionContainer.childNodes);\n      block.remove();\n    }\n  }\n}",
+            "score": -1.0
+        },
+        "blocks/fragment/fragment.js::loadFragment": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/fragment/fragment.js",
+            "merged_function": "async function loadFragment(path) {\n  if (path && path.startsWith('/')) {\n    const resp = await fetch(`${path}.plain.html`);\n    if (resp.ok) {\n      const main = document.createElement('main');\n      main.innerHTML = await resp.text();\n      decorateMain(main, true);\n      await loadBlocks(main);\n      return main;\n    }\n  }\n  return null;\n}",
+            "score": -1.0
+        },
+        "blocks/header/header.js::clearSelectedSearchOption": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "function clearSelectedSearchOption(searchInput, resultsContainer) {\n  searchInput.removeAttribute('aria-activedescendant');\n  resultsContainer.querySelector('[aria-selected]')?.removeAttribute('aria-selected');\n}",
+            "score": -1.0
+        },
+        "blocks/header/header.js::closeOnEscape": {
+            "changes_after_merge": 4,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "function closeOnEscape(e) {\n  if (e.code === 'Escape') {\n    const nav = document.getElementById('nav');\n    const navSections = nav.querySelector('.nav-sections');\n    const navSectionExpanded = navSections.querySelector('[aria-expanded=\"true\"]');\n    if (navSectionExpanded && isDesktop.matches) {\n      // eslint-disable-next-line no-use-before-define\n      toggleAllNavSections(navSections);\n      navSectionExpanded.focus();\n    } else if (!isDesktop.matches) {\n      // eslint-disable-next-line no-use-before-define\n      toggleMenu(nav, navSections);\n      nav.querySelector('button').focus();\n    }\n  }\n}",
+            "score": 0.21970666902392466
+        },
+        "blocks/header/header.js::debounce": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "function debounce(method, delay) {\n  clearTimeout(tId);\n  tId = setTimeout(() => {\n    method();\n  }, delay);\n}",
+            "score": -1.0
+        },
+        "blocks/header/header.js::decorate": {
+            "changes_after_merge": 7,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "async function decorate(block) {\n  // fetch nav content\n  const navMeta = getMetadata('nav');\n  const navPath = navMeta ? new URL(navMeta).pathname : '/nav';\n  const resp = await fetch(`${navPath}.plain.html`);\n\n  if (resp.ok) {\n    const html = await resp.text();\n\n    // decorate nav DOM\n    const nav = document.createElement('nav');\n    nav.id = 'nav';\n    nav.innerHTML = html;\n\n    const classes = ['brand', 'sections', 'register', 'tools'];\n    classes.forEach((c, i) => {\n      const section = nav.children[i];\n      if (section) section.classList.add(`nav-${c}`);\n    });\n\n    const navSections = nav.querySelector('.nav-sections');\n    if (navSections) {\n      navSections.querySelectorAll(':scope > ul > li').forEach((navSection) => {\n        if (navSection.querySelector('ul')) navSection.classList.add('nav-drop');\n        navSection.addEventListener('click', () => {\n          if (isDesktop.matches) {\n            const expanded = navSection.getAttribute('aria-expanded') === 'true';\n            toggleAllNavSections(navSections);\n            navSection.setAttribute('aria-expanded', expanded ? 'false' : 'true');\n          }\n        });\n      });\n    }\n\n    const regLink = nav.querySelector('.nav-register a');\n    if (regLink) {\n      regLink.classList.add('button');\n    }\n\n    const search = nav.querySelector('.nav-tools .icon-search');\n    if (search) {\n      const tools = nav.querySelector('.nav-tools');\n      tools.innerHTML = `\n      <div class=\"search-form\">\n        <input type=\"text\" name=\"fulltext\" placeholder=\"Search\" maxlength=\"100\"></input>\n        <span class=\"icon icon-search\"></span>\n      </div>`;\n    }\n\n    // hamburger for mobile\n    const hamburger = document.createElement('div');\n    hamburger.classList.add('nav-hamburger');\n    hamburger.innerHTML = `<button type=\"button\" aria-controls=\"nav\" aria-label=\"Open navigation\">\n        <span class=\"nav-hamburger-icon\"></span>\n      </button>`;\n    hamburger.addEventListener('click', () => toggleMenu(nav, navSections));\n    nav.prepend(hamburger);\n    nav.setAttribute('aria-expanded', 'false');\n    // prevent mobile nav behavior on window resize\n    toggleMenu(nav, navSections, isDesktop.matches);\n    isDesktop.addEventListener('change', () => toggleMenu(nav, navSections, isDesktop.matches));\n\n    decorateIcons(nav);\n    const navWrapper = document.createElement('div');\n    navWrapper.className = 'nav-wrapper';\n    navWrapper.append(nav);\n    wrapImgsInLinks(nav);\n    block.append(navWrapper);\n  }\n}",
+            "score": 0.5758972102231612
+        },
+        "blocks/header/header.js::execSearch": {
+            "changes_after_merge": 2,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "async function execSearch(query, resultsContainer) {\n  if (query.length === 0) {\n    resultsContainer.classList.remove('visible');\n  }\n\n  if (query.length >= 3) {\n    const regex = new RegExp(query, 'id');\n    const results = ffetch('/query-index.json')\n      .filter((p) => regex.test(p.title) || regex.test(p.description))\n      .limit(10);\n    let hasResults = false;\n    resultsContainer.innerHTML = '';\n    // eslint-disable-next-line no-restricted-syntax\n    for await (const res of results) {\n      const a = document.createElement('a');\n      a.classList.add('search-result');\n      a.href = res.path;\n      hasResults = true;\n      const span = document.createElement('span');\n      const titleExec = regex.exec(res.title);\n      let titleContent = res.title;\n      if (titleExec && titleExec.indices) {\n        titleContent = '';\n        let lastEnd = 0;\n        titleExec.indices.forEach((index) => {\n          const [start, end] = index;\n          titleContent += res.title.substring(lastEnd, start);\n          titleContent += `<mark>${res.title.substring(start, end)}</mark>`;\n          lastEnd = end;\n        });\n        titleContent += res.title.substring(lastEnd);\n      }\n      span.innerHTML = titleContent;\n      a.append(span);\n      resultsContainer.append(a);\n    }\n\n    if (!hasResults) {\n      const span = document.createElement('span');\n      span.classList.add('search-no-results');\n      span.textContent = 'No Results Found.';\n      resultsContainer.append(span);\n    }\n    resultsContainer.classList.add('visible');\n  }\n}",
+            "score": -0.1674206722684014
+        },
+        "blocks/header/header.js::focusNavSection": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "function focusNavSection() {\n  document.activeElement.addEventListener('keydown', openOnKeydown);\n}",
+            "score": -1.0
+        },
+        "blocks/header/header.js::getSearchResultsContainer": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "function getSearchResultsContainer(searchInput) {\n  let resultsContainer;\n  let nextSibling = searchInput.nextElementSibling;\n  while (!resultsContainer && nextSibling) {\n    if (nextSibling.classList.contains('search-results')) {\n      resultsContainer = nextSibling;\n    }\n    nextSibling = nextSibling.nextElementSibling;\n  }\n\n  return resultsContainer;\n}",
+            "score": -1.0
+        },
+        "blocks/header/header.js::incrementSelectedSearchOption": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "function incrementSelectedSearchOption(searchInput, resultsContainer, forward) {\n  const selected = resultsContainer.querySelector('[aria-selected]');\n  let newSelected;\n  if (forward) {\n    newSelected = (selected && selected.nextElementSibling) ? selected.nextElementSibling : resultsContainer.querySelector('.search-result:first-child');\n  } else {\n    newSelected = (selected && selected.previousElementSibling) ? selected.previousElementSibling : resultsContainer.querySelector('.search-result:last-child');\n  }\n\n  clearSelectedSearchOption(searchInput, resultsContainer);\n  if (newSelected) {\n    newSelected.setAttribute('aria-selected', true);\n    searchInput.setAttribute('aria-activedescendant', newSelected.id);\n  }\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/header/header.js::openOnKeydown": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "function openOnKeydown(e) {\n  const focused = document.activeElement;\n  const isNavDrop = focused.className === 'nav-drop';\n  if (isNavDrop && (e.code === 'Enter' || e.code === 'Space')) {\n    const dropExpanded = focused.getAttribute('aria-expanded') === 'true';\n    // eslint-disable-next-line no-use-before-define\n    toggleAllNavSections(focused.closest('.nav-sections'));\n    focused.setAttribute('aria-expanded', dropExpanded ? 'false' : 'true');\n  }\n}",
+            "score": -1.0
+        },
+        "blocks/header/header.js::searchKeyDown": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "function searchKeyDown(event) {\n  const {\n    key,\n    altKey,\n    ctrlKey,\n    shiftKey,\n  } = event;\n  let stop = false;\n  const searchInput = event.target;\n  const resultsContainer = getSearchResultsContainer(searchInput);\n\n  if (ctrlKey || shiftKey) {\n    return;\n  }\n\n  switch (key) {\n    case 'Down':\n    case 'ArrowDown':\n      if (!altKey) {\n        incrementSelectedSearchOption(searchInput, resultsContainer, true);\n      }\n      stop = true;\n      break;\n    case 'Up':\n    case 'ArrowUp':\n      if (!altKey) {\n        incrementSelectedSearchOption(searchInput, resultsContainer, false);\n      }\n      stop = true;\n      break;\n    case 'Esc':\n    case 'Escape': {\n      const expanded = searchInput.getAttribute('aria-expanded') === 'true';\n      searchInput.setAttribute('aria-expanded', false);\n      clearSelectedSearchOption(searchInput, resultsContainer);\n      if (expanded) {\n        stop = true;\n      }\n      break;\n    }\n    case 'Tab':\n      searchInput.setAttribute('aria-expanded', false);\n      clearSelectedSearchOption(searchInput, resultsContainer);\n      break;\n    default:\n      break;\n  }\n\n  if (stop) {\n    event.stopPropagation();\n    event.preventDefault();\n  }\n}",
+            "score": -1.0
+        },
+        "blocks/header/header.js::searchKeyUp": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "function searchKeyUp(event) {\n  const {\n    key,\n  } = event;\n  const searchInput = event.target;\n  const resultsContainer = getSearchResultsContainer(searchInput);\n  let stop = false;\n\n  switch (key) {\n    case 'Enter': {\n      const expanded = searchInput.getAttribute('aria-expanded') === 'true';\n      const selected = resultsContainer.querySelector('[aria-selected] a');\n      if (expanded && selected) {\n        window.location = selected.href;\n        stop = true;\n      }\n      break;\n    }\n    case 'Down':\n    case 'ArrowDown':\n    case 'Up':\n    case 'ArrowUp': {\n      const expanded = searchInput.getAttribute('aria-expanded') === 'true';\n      if (expanded) {\n        stop = true;\n      }\n      break;\n    }\n    case 'Left':\n    case 'ArrowLeft':\n    case 'Right':\n    case 'ArrowRight':\n    case 'Tab':\n    case 'Esc':\n    case 'Escape':\n      stop = true;\n      break;\n    default:\n      break;\n  }\n\n  if (!stop) {\n    debounce(() => {\n      execSearch(searchInput, resultsContainer);\n    }, 250);\n  } else {\n    event.stopPropagation();\n    event.preventDefault();\n  }\n}",
+            "score": -1.0
+        },
+        "blocks/header/header.js::setSelectedSearchOption": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "function setSelectedSearchOption(searchInput, resultsContainer, option) {\n  clearSelectedSearchOption(searchInput, resultsContainer);\n  option.setAttribute('aria-selected', true);\n  searchInput.setAttribute('aria-activedescendant', option.id);\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/header/header.js::toggleAllNavSections": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "function toggleAllNavSections(sections, expanded = false) {\n  sections.querySelectorAll('.nav-sections > ul > li').forEach((section) => {\n    section.setAttribute('aria-expanded', expanded);\n  });\n}",
+            "score": -1.0
+        },
+        "blocks/header/header.js::toggleMenu": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/header/header.js",
+            "merged_function": "function toggleMenu(nav, navSections, forceExpanded = null) {\n  const expanded = forceExpanded !== null ? !forceExpanded : nav.getAttribute('aria-expanded') === 'true';\n  const button = nav.querySelector('.nav-hamburger button');\n  document.body.style.overflowY = (expanded || isDesktop.matches) ? '' : 'hidden';\n  nav.setAttribute('aria-expanded', expanded ? 'false' : 'true');\n  toggleAllNavSections(navSections, expanded || isDesktop.matches ? 'false' : 'true');\n  button.setAttribute('aria-label', expanded ? 'Open navigation' : 'Close navigation');\n  // enable nav dropdown keyboard accessibility\n  const navDrops = navSections.querySelectorAll('.nav-drop');\n  if (isDesktop.matches) {\n    navDrops.forEach((drop) => {\n      if (!drop.hasAttribute('tabindex')) {\n        drop.setAttribute('role', 'button');\n        drop.setAttribute('tabindex', 0);\n        drop.addEventListener('focus', focusNavSection);\n      }\n    });\n  } else {\n    navDrops.forEach((drop) => {\n      drop.removeAttribute('role');\n      drop.removeAttribute('tabindex');\n      drop.removeEventListener('focus', focusNavSection);\n    });\n  }\n  // enable menu collapse on escape keypress\n  if (!expanded || isDesktop.matches) {\n    // collapse menu on escape press\n    window.addEventListener('keydown', closeOnEscape);\n  } else {\n    window.removeEventListener('keydown', closeOnEscape);\n  }\n}",
+            "score": -1.0
+        },
+        "blocks/hero/hero.js::addDropdown": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/hero/hero.js",
+            "merged_function": "function addDropdown(contentBox) {\n  if (contentBox == null || contentBox.querySelector('ul') == null) {\n    return;\n  }\n\n  const dropDownSourceElement = contentBox.querySelector('ul > li:first-child');\n  // by convention the title is the first item in the unordered list\n  const dropdownTitle = dropDownSourceElement.textContent.split('\\n')[0];\n\n  const selectElWrapper = document.createElement('div');\n  selectElWrapper.classList.add('hero-select-wrapper');\n  const selectEl = document.createElement('select');\n\n  const ul = contentBox.querySelector('ul > li > ul');\n  ul.querySelectorAll('li').forEach((liElement) => {\n    const t = liElement.querySelector('a');\n    if (t == null) {\n      return;\n    }\n    // Create a new <option> element\n    const optionElement = document.createElement('option');\n    optionElement.text = t.textContent;\n    optionElement.value = t.href;\n    selectEl.appendChild(optionElement);\n  });\n  contentBox.querySelector('ul').remove();\n  // insert the button\n  const btnContainer = contentBox.querySelector('.button-container');\n  const btn = contentBox.querySelector('.button-container > a');\n  btn.href = selectEl.options[selectEl.selectedIndex].value;\n  selectElWrapper.appendChild(selectEl);\n  contentBox.insertBefore(selectElWrapper, btnContainer);\n\n  // add an event listener to the dropdown to redirect to the selected link\n  selectEl.addEventListener('change', () => {\n    const selectedOption = selectEl.value;\n    btn.href = selectedOption;\n  });\n\n  // insert the title of the dropdown\n  const titleEl = document.createElement('h5');\n  titleEl.textContent = dropdownTitle;\n  contentBox.insertBefore(titleEl, selectElWrapper);\n}",
+            "score": -1.0
+        },
+        "blocks/hero/hero.js::decorate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/hero/hero.js",
+            "merged_function": "function decorate(block) {\n  const elementContainer = block.querySelector(':scope > div > div');\n  const rightBox = document.createElement('div');\n  rightBox.classList.add('hero-image-container');\n  rightBox.append(elementContainer.querySelector('picture'));\n  block.append(rightBox);\n\n  const leftBox = document.createElement('div');\n  leftBox.classList.add('hero-content-container');\n  leftBox.append(...elementContainer.children);\n\n  addDropdown(leftBox);\n\n  block.prepend(leftBox);\n  elementContainer.parentElement.remove();\n  removeEmptyPTags(block);\n}",
+            "score": -1.0
+        },
+        "blocks/hero/hero.js::removeEmptyPTags": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/hero/hero.js",
+            "merged_function": "function removeEmptyPTags(element) {\n  element.querySelectorAll('p').forEach((p) => {\n    // get rid of empty p tags\n    if (p.children.length === 0) {\n      p.remove();\n    }\n  });\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/news-feed/news-feed.js::buildNewsFeed": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/news-feed/news-feed.js",
+            "merged_function": "async function buildNewsFeed(ul, pageNum, pagesElem) {\n  const limit = 5;\n  const offset = pageNum * limit;\n  let morePages = false;\n  const newsFeed = ffetch('/query-index.json')\n    .filter((p) => p.path.startsWith('/news/'))\n    .slice(offset, offset + limit + 1)\n    .follow('path', 'content');\n\n  let i = 0;\n  const newUl = document.createElement('ul');\n  // eslint-disable-next-line no-restricted-syntax\n  for await (const post of newsFeed) {\n    if (i >= limit) {\n      // skip render, but know we have more page\n      morePages = true;\n      break;\n    }\n\n    const li = document.createElement('li');\n    li.append(buildPost(post, i < 1));\n    newUl.append(li);\n\n    i += 1;\n  }\n\n  // pageNum is stored as a 0-based index\n  // but when passed as a url param, it's normalized to be 1 based\n  // thus the difference b/w data-page (-1 | +1) and page (0 || +2)\n  // see also where pageNum is initialized in decorate\n  pagesElem.innerHTML = `\n      <ul class=\"pages\">\n        <li class=\"prev\"><a data-page=\"${pageNum - 1}\" href=\"${window.location.pathname}?page=${pageNum}\"><span class=\"icon icon-next\"><span class=\"sr-only\">Previous Page</span></a></li>\n        <li class=\"cur\"><span>${pageNum + 1}</span></li>\n        <li class=\"next\"><a data-page=\"${pageNum + 1}\" href=\"${window.location.pathname}?page=${pageNum + 2}\"><span class=\"icon icon-next\"></span><span class=\"sr-only\">Next Page</span></a></li>\n      </ul>\n    `;\n\n  if (pageNum === 0) {\n    pagesElem.querySelector('.prev').remove();\n  }\n\n  if (!morePages) {\n    pagesElem.querySelector('.next').remove();\n  }\n\n  pagesElem.querySelectorAll('li > a').forEach((link) => {\n    link.addEventListener('click', (evt) => {\n      evt.preventDefault();\n      buildNewsFeed(ul, Number(link.dataset.page), pagesElem);\n    });\n  });\n\n  decorateIcons(pagesElem);\n  ul.innerHTML = newUl.innerHTML;\n  window.scrollTo({\n    top: 0,\n    behavior: 'smooth',\n  });\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/news-feed/news-feed.js::buildPost": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/news-feed/news-feed.js",
+            "merged_function": "function buildPost(post, eager) {\n  const postCard = document.createElement('div');\n  postCard.classList.add('news-card');\n\n  const description = post.content.querySelector('h1 + p');\n  const title = post.content.querySelector('h1').textContent;\n\n  postCard.innerHTML = `\n      <div class=\"news-image\">\n        <a href=\"${post.path}\">${createOptimizedPicture(post.image, `Teaser image for ${title}`, eager).outerHTML}</a>\n      </div>\n      <div class=\"news-content\">\n        <a class=\"post-title\" href=\"${post.path}\">${title}</a>\n        <a class=\"post-description\" href=\"${post.path}\">\n          <p>${description ? description.textContent : post.description}</p>\n          <span>Read More</span>\n        </a>\n      </div>\n    </a>\n  `;\n\n  return postCard;\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/news-feed/news-feed.js::decorate": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/news-feed/news-feed.js",
+            "merged_function": "function decorate(block) {\n  const observer = new IntersectionObserver(async (entries) => {\n    if (entries.some((e) => e.isIntersecting)) {\n      observer.disconnect();\n      const ul = document.createElement('ul');\n      ul.classList.add('news-list');\n      block.append(ul);\n\n      const pagesElem = document.createElement('div');\n      pagesElem.classList.add('news-pages');\n      block.append(pagesElem);\n\n      const usp = new URLSearchParams(window.location.search);\n      const page = usp.get('page');\n      const pageNum = Number(!page ? '0' : page - 1);\n      buildNewsFeed(ul, pageNum, pagesElem);\n    }\n  });\n  observer.observe(block);\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/primary/primary.js::decorate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/primary/primary.js",
+            "merged_function": "function decorate() {}",
+            "score": -1.0
+        },
+        "blocks/registration-form/registration-form.js::buildForm": {
+            "changes_after_merge": 2,
+            "file_path": "blocks/registration-form/registration-form.js",
+            "merged_function": "function buildForm(serchFn) {\n  const wrapper = createElement('div', 'form-wrapper');\n\n  wrapper.append(createElement('input', 'registration-form-input', {\n    required: true,\n    placeholder: 'e.g. 012718',\n  }));\n\n  const textBoxTooltipContainers = createElement('div');\n  const textBoxTooltip = createElement('span', 'registration-form-input-tooltip');\n  textBoxTooltip.innerText = '';\n  wrapper.append(textBoxTooltipContainers);\n  textBoxTooltipContainers.append(textBoxTooltip);\n\n  const searchBtn = createElement('button', 'button', {\n    type: 'submit',\n  }, 'Search');\n  searchBtn.addEventListener('click', serchFn);\n  wrapper.append(searchBtn);\n\n  return wrapper;\n}",
+            "score": -0.1674206722684014
+        },
+        "blocks/registration-form/registration-form.js::decorate": {
+            "changes_after_merge": 2,
+            "file_path": "blocks/registration-form/registration-form.js",
+            "merged_function": "function decorate(block) {\n  // expect three rows\n  const rows = [...block.children];\n  if (rows.length < 3) {\n    // console.log('Registration form expects 3 rows. Make sure to edit the document correctly.');\n    return;\n  }\n  // extract the URL for the lookup data\n  const rxBinRegistry = rows[2].querySelector('a').href;\n  if (rxBinRegistry === null || typeof (rxBinRegistry) === 'undefined') {\n    return;\n  }\n  rows[2].remove();\n\n  decorateFormSteps(rows[0], 1, async (evt) => {\n    evt.preventDefault();\n    const formWrapper = evt.currentTarget.closest('.form-wrapper');\n    const textBox = formWrapper.querySelector('.registration-form-input');\n    const rxInput = textBox.value.toLowerCase();\n    const textBoxTooltip = formWrapper.querySelector('.registration-form-input-tooltip');\n    stepOneLookup(rxBinRegistry, rxInput, textBoxTooltip, block);\n  });\n  decorateFormSteps(rows[1], 2, async (evt) => {\n    evt.preventDefault();\n    const formWrapper = evt.currentTarget.closest('.form-wrapper');\n    const textBox = formWrapper.querySelector('.registration-form-input');\n    const grpInput = textBox.value.toLowerCase();\n    const textBoxTooltip = formWrapper.querySelector('.registration-form-input-tooltip');\n    stepTwoLookup(grpInput, textBoxTooltip);\n  });\n  block.classList.add('step-1');\n}",
+            "score": -0.1674206722684014
+        },
+        "blocks/registration-form/registration-form.js::decorateFormSteps": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/registration-form/registration-form.js",
+            "merged_function": "function decorateFormSteps(row, i, serchFn) {\n  row.classList.add('registration-form-step', `registration-form-step-${i}`);\n  const formContainer = row.children[0];\n  formContainer.classList.add('form-container');\n  const form = buildForm(serchFn);\n  formContainer.append(form);\n\n  const imageContainer = row.children[1];\n  imageContainer.classList.add('image-container');\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/registration-form/registration-form.js::stepOneLookup": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/registration-form/registration-form.js",
+            "merged_function": "async function stepOneLookup(lookupUrl, lookupValue, textBoxTooltip, block) {\n  // {\n  //     Rx Bin: \"3585\",\n  //     Requires Group Lookup: \"No\",\n  //     URL: \"https://member.envisionpharmacies.com/PortalUser/EpharmPortalSignin\"\n  // }\n  const rxItem = await ffetch(lookupUrl)\n    .filter((rx) => rx['Rx Bin'] === lookupValue)\n    .first();\n  // const rxItem = rxItems.filter((rx) => rx['Rx Bin'] === rxInput).pop();\n  if (rxItem === null || typeof (rxItem) === 'undefined') {\n    textBoxTooltip.innerText = 'Please provide a valid Rx Bin Number.';\n    textBoxTooltip.style.visibility = 'visible';\n    textBoxTooltip.style.opacity = 1;\n    // Hide the tooltip after 5 seconds\n    setTimeout(() => {\n      textBoxTooltip.style.opacity = 0;\n    }, 5000);\n    return;\n  }\n  // rxItem is found\n  if (rxItem['Requires Group Lookup'] === 'No') {\n    const url = rxItem.URL;\n    // follow the URL\n    window.open(url, '_blank');\n    return;\n  }\n\n  // load the cache for next step\n  groupsRegistryCache = ffetch(lookupUrl)\n    .sheet(GROUP_REGISTRY_SHEET_NAME)\n    .chunks(1000)\n    .all();\n\n  block.classList.add('step-2');\n  block.classList.remove('step-1');\n}",
+            "score": -1.0
+        },
+        "blocks/registration-form/registration-form.js::stepTwoLookup": {
+            "changes_after_merge": 1,
+            "file_path": "blocks/registration-form/registration-form.js",
+            "merged_function": "async function stepTwoLookup(lookupValue, textBoxTooltip) {\n  const groupData = await groupsRegistryCache;\n  const grpItem = groupData\n    .find((rx) => rx['Group Id'].toLowerCase() === lookupValue);\n\n  if (grpItem === null || typeof (grpItem) === 'undefined') {\n    textBoxTooltip.innerText = 'Please provide a valid Group Number.';\n    textBoxTooltip.style.visibility = 'visible';\n    textBoxTooltip.style.opacity = 1;\n    // Hide the tooltip after 5 seconds\n    setTimeout(() => {\n      textBoxTooltip.style.opacity = 0;\n    }, 5000);\n    return;\n  }\n  // grpItem was found\n  const url = grpItem.URL;\n  // follow the URL\n  window.open(url, '_blank');\n}",
+            "score": -0.47470092992561286
+        },
+        "blocks/sidebar/sidebar.js::decorate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/sidebar/sidebar.js",
+            "merged_function": "function decorate(block) {\n  const sidebarWrapper = block.parentElement;\n\n  if (sidebarWrapper.dataset && sidebarWrapper.dataset.background) {\n    const bgClass = `bg-${sidebarWrapper.dataset.background.replace(' ', '-').toLowerCase()}`;\n    sidebarWrapper.classList.add(bgClass);\n  }\n}",
+            "score": -1.0
+        },
+        "blocks/spacer/spacer.js::decorate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/spacer/spacer.js",
+            "merged_function": "function decorate() {}",
+            "score": -1.0
+        },
+        "blocks/table/table.js::buildCell": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/table/table.js",
+            "merged_function": "function buildCell(rowIndex) {\n  const cell = rowIndex ? document.createElement('td') : document.createElement('th');\n  if (!rowIndex) cell.setAttribute('scope', 'col');\n  return cell;\n}",
+            "score": -1.0
+        },
+        "blocks/table/table.js::decorate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/table/table.js",
+            "merged_function": "async function decorate(block) {\n  const table = document.createElement('table');\n  const thead = document.createElement('thead');\n  const tbody = document.createElement('tbody');\n  table.append(thead, tbody);\n  [...block.children].forEach((child, i) => {\n    const row = document.createElement('tr');\n    if (i) tbody.append(row);\n    else thead.append(row);\n    [...child.children].forEach((col) => {\n      const cell = buildCell(i);\n      cell.innerHTML = col.innerHTML;\n      row.append(cell);\n    });\n  });\n  block.innerHTML = '';\n  block.append(table);\n}",
+            "score": -1.0
+        },
+        "blocks/toc/toc.js::decorate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/toc/toc.js",
+            "merged_function": "function decorate(block) {\n  const ul = createElement('ul', 'toc-list');\n  const nav = createElement('nav', '', {\n    'aria-label': 'Table of Contents',\n  }, ul);\n  block.innerHTML = '';\n  block.append(nav);\n\n  const h2s = [...document.querySelectorAll('main h2')];\n  const h3s = [...document.querySelectorAll('main h3')];\n\n  let h3Idx = 0;\n  for (let i = 0; i < h2s.length; i += 1) {\n    const h2 = h2s[i];\n    const li = createElement('li', 'toc-h2');\n    const a = createElement('a');\n    a.href = `#${h2.id}`;\n    a.textContent = h2.textContent;\n    li.append(a);\n    ul.append(li);\n\n    const subUl = createElement('ul', ['toc-sub-list', 'toc-list-empty']);\n    li.append(subUl);\n    const nextH2 = h2s[i + 1];\n    for (let j = h3Idx; j < h3s.length; j += 1) {\n      const h3 = h3s[j];\n      // eslint-disable-next-line no-bitwise\n      if (h2.compareDocumentPosition(h3) & Node.DOCUMENT_POSITION_FOLLOWING) {\n        // eslint-disable-next-line no-bitwise\n        if (!nextH2 || (nextH2.compareDocumentPosition(h3) & Node.DOCUMENT_POSITION_PRECEDING)) {\n          const subLi = createElement('li', 'toc-h3');\n          const subA = createElement('a');\n          subA.href = `#${h3.id}`;\n          subA.textContent = h3.textContent;\n          subLi.append(subA);\n          subUl.append(subLi);\n          subUl.classList.remove('toc-list-empty');\n          h3Idx = j;\n        }\n      }\n    }\n  }\n}",
+            "score": -1.0
+        },
+        "blocks/video/video.js::decorate": {
+            "changes_after_merge": 0,
+            "file_path": "blocks/video/video.js",
+            "merged_function": "async function decorate(block) {\n  const a = block.querySelector('a');\n  if (a) {\n    const source = a.href;\n    const pic = block.querySelector('picture');\n    if (pic) {\n      const wrapper = document.createElement('div');\n      wrapper.className = 'video-placeholder';\n      wrapper.innerHTML = '<div class=\"video-placeholder-play\"><button title=\"Play\"></button></div>';\n      wrapper.prepend(pic);\n      wrapper.addEventListener('click', () => {\n        block.innerHTML = `\n        <video controls autoplay>\n          <source src=\"${source}\" type=\"video/${source.split('.').pop()}\" >\n        </video>\n        `;\n      });\n      block.innerHTML = '';\n      block.append(wrapper);\n    } else {\n      block.innerHTML = `\n      <video controls>\n        <source src=\"${source}\" type=\"video/${source.split('.').pop()}\" >\n      </video>\n      `;\n    }\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/date.js::getBlogLongDateFormat": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/date.js",
+            "merged_function": "function getBlogLongDateFormat(date) {\n  const formatOptions = {\n    year: 'numeric',\n    month: 'short',\n    day: 'numeric',\n  };\n\n  return date.toLocaleString('en-US', formatOptions);\n}",
+            "score": -1.0
+        },
+        "scripts/date.js::getMetadataDate": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/date.js",
+            "merged_function": "function getMetadataDate(metaDateStr) {\n  const utcUnixDateStr = getUTCUnixDateString(metaDateStr);\n  const utcDate = new Date(utcUnixDateStr);\n  const test = updateUTCDateToMatchWordDocDate(utcDate);\n  return new Date(test);\n}",
+            "score": -1.0
+        },
+        "scripts/date.js::getTimeElementFormat": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/date.js",
+            "merged_function": "function getTimeElementFormat(date) {\n  if (!Date.parse(date)) return null;\n  return date.toISOString().split('T')[0];\n}",
+            "score": -1.0
+        },
+        "scripts/date.js::getUTCUnixDateString": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/date.js",
+            "merged_function": "function getUTCUnixDateString(shortDateStr) {\n  const [mm, dd, yyyy] = shortDateStr.split(/[^\\d]+/);\n  return Date.UTC(yyyy, mm - 1, dd);\n}",
+            "score": -1.0
+        },
+        "scripts/date.js::updateUTCDateToMatchWordDocDate": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/date.js",
+            "merged_function": "function updateUTCDateToMatchWordDocDate(utcDate) {\n  return utcDate.setDate(utcDate.getDate() + 1);\n}",
+            "score": -1.0
+        },
+        "scripts/delayed.js::loadDelayed": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/delayed.js",
+            "merged_function": "async function loadDelayed() {\n  // Core Web Vitals RUM collection\n  sampleRUM('cwv');\n\n  // add more delayed functionality here\n  const placeholders = await fetchPlaceholders();\n  loadHubSpot(placeholders);\n  loadGoogleTagManager(placeholders);\n  loadLinkedInTracking(placeholders);\n}",
+            "score": -1.0
+        },
+        "scripts/delayed.js::loadGoogleTagManager": {
+            "changes_after_merge": 1,
+            "file_path": "scripts/delayed.js",
+            "merged_function": "async function loadGoogleTagManager() {\n  const placeholders = await fetchPlaceholders();\n  // google tag manager\n  const { gtmId } = placeholders;\n  // eslint-disable-next-line\n  (function (w, d, s, l, i) { w[l] = w[l] || []; w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' }); var f = d.getElementsByTagName(s)[0], j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f); })(window, document, 'script', 'dataLayer', gtmId);\n}",
+            "score": -0.47470092992561286
+        },
+        "scripts/delayed.js::loadHubSpot": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/delayed.js",
+            "merged_function": "function loadHubSpot(placeholders) {\n  const hsScriptEl = document.createElement('script');\n  hsScriptEl.type = 'text/javascript';\n  hsScriptEl.async = true;\n  hsScriptEl.defer = true;\n  hsScriptEl.setAttribute('id', 'hs-script-loader');\n  hsScriptEl.src = `//js.hs-scripts.com/${placeholders.hubspotPortalId}.js`;\n  document.querySelector('head').append(hsScriptEl);\n}",
+            "score": -1.0
+        },
+        "scripts/delayed.js::loadLinkedInTracking": {
+            "changes_after_merge": 1,
+            "file_path": "scripts/delayed.js",
+            "merged_function": "async function loadLinkedInTracking() {\n  const placeholders = await fetchPlaceholders();\n  const { linkedinPartnerId } = placeholders;\n\n  // eslint-disable-next-line no-underscore-dangle\n  window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];\n  // eslint-disable-next-line no-underscore-dangle\n  window._linkedin_data_partner_ids.push(linkedinPartnerId);\n\n  ((l) => {\n    if (!l) {\n      window.lintrk = (a, b) => { window.lintrk.q.push([a, b]); };\n      window.lintrk.q = [];\n    }\n    const s = document.getElementsByTagName('script')[0];\n    const b = document.createElement('script');\n    b.type = 'text/javascript';\n    b.async = true;\n    b.src = 'https://snap.licdn.com/li.lms-analytics/insight.min.js';\n    s.parentNode.insertBefore(b, s);\n  })(window.lintrk);\n}",
+            "score": -0.47470092992561286
+        },
+        "scripts/ffetch.js::all": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "async function all(upstream) {\n  const result = [];\n  for await (const entry of upstream) {\n    result.push(entry);\n  }\n  return result;\n}",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::assignOperations": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "function assignOperations(generator, context) {\n  // operations that return a new generator\n  function createOperation(fn) {\n    return (...rest) => assignOperations(fn.apply(null, [generator, context, ...rest]), context);\n  }\n  const operations = {\n    skip: createOperation(skip),\n    limit: createOperation(limit),\n    slice: createOperation(slice),\n    map: createOperation(map),\n    filter: createOperation(filter),\n    follow: createOperation(follow),\n  };\n\n  // functions that either return the upstream generator or no generator at all\n  const functions = {\n    chunks: chunks.bind(null, generator, context),\n    all: all.bind(null, generator, context),\n    first: first.bind(null, generator, context),\n    withFetch: withFetch.bind(null, generator, context),\n    withHtmlParser: withHtmlParser.bind(null, generator, context),\n    sheet: sheet.bind(null, generator, context),\n  };\n\n  return Object.assign(generator, operations, functions);\n}",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::chunks": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "function chunks(upstream, context, chunks) {\n  context.chunks = chunks;\n  return upstream;\n}",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::createOperation": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "function createOperation(fn) {\n    return (...rest) => assignOperations(fn.apply(null, [generator, context, ...rest]), context);\n  }",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::fetch": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "fetch = (...rest) => window.fetch.apply(null, rest)",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::ffetch": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "function ffetch(url) {\n  let chunks = 255;\n  const fetch = (...rest) => window.fetch.apply(null, rest);\n  const parseHtml = (html) => new window.DOMParser().parseFromString(html, 'text/html');\n\n  try {\n    if ('connection' in window.navigator && window.navigator.connection.saveData === true) {\n      // request smaller chunks in save data mode\n      chunks = 64;\n    }\n  } catch (e) { /* ignore */ }\n\n  const context = { chunks, fetch, parseHtml };\n  const generator = request(url, context);\n\n  return assignOperations(generator, context);\n}",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::filter": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "async function* filter(upstream, context, fn) {\n  for await (const entry of upstream) {\n    if (fn(entry)) {\n      yield entry;\n    }\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::first": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "async function first(upstream) {\n  /* eslint-disable-next-line no-unreachable-loop */\n  for await (const entry of upstream) {\n    return entry;\n  }\n  return null;\n}",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::follow": {
+            "changes_after_merge": 1,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "function follow(upstream, context, name, maxInFlight = 5) {\n  const { fetch, parseHtml } = context;\n  return map(upstream, context, async (entry) => {\n    const value = entry[name];\n    if (value) {\n      const resp = await fetch(value);\n      return { ...entry, [name]: resp.ok ? parseHtml(await resp.text()) : null };\n    }\n    return entry;\n  }, maxInFlight);\n}",
+            "score": -0.47470092992561286
+        },
+        "scripts/ffetch.js::limit": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "async function* limit(upstream, context, limit) {\n  let yielded = 0;\n  for await (const entry of upstream) {\n    yield entry;\n    yielded += 1;\n    if (yielded === limit) {\n      return;\n    }\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::map": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "async function* map(upstream, context, fn, maxInFlight = 5) {\n  const promises = [];\n  for await (let entry of upstream) {\n    promises.push(fn(entry));\n    if (promises.length === maxInFlight) {\n      for (entry of promises) {\n        entry = await entry;\n        if (entry) yield entry;\n      }\n      promises.splice(0, promises.length);\n    }\n  }\n  for (let entry of promises) {\n    entry = await entry;\n    if (entry) yield entry;\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::parseHtml": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "parseHtml = (html) => new window.DOMParser().parseFromString(html, 'text/html')",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::request": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "async function* request(url, context) {\n  const { chunks, sheet, fetch } = context;\n  for (let offset = 0, total = Infinity; offset < total; offset += chunks) {\n    const params = new URLSearchParams(`offset=${offset}&limit=${chunks}`);\n    if (sheet) params.append(`sheet`, sheet);\n    const resp = await fetch(`${url}?${params.toString()}`);\n    if (resp.ok) {\n      const json = await resp.json();\n      total = json.total;\n      for (const entry of json.data) yield entry;\n    } else {\n      return;\n    }\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::sheet": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "function sheet(upstream, context, sheet) {\n  context.sheet = sheet;\n  return upstream;\n}",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::skip": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "async function* skip(upstream, context, skip) {\n  let skipped = 0;\n  for await (const entry of upstream) {\n    if (skipped < skip) {\n      skipped += 1;\n    } else {\n      yield entry;\n    }\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::slice": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "function slice(upstream, context, from, to) {\n  return limit(skip(upstream, context, from), context, to - from);\n}",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::withFetch": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "function withFetch(upstream, context, fetch) {\n  context.fetch = fetch;\n  return upstream;\n}",
+            "score": -1.0
+        },
+        "scripts/ffetch.js::withHtmlParser": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/ffetch.js",
+            "merged_function": "function withHtmlParser(upstream, context, parseHtml) {\n  context.parseHtml = parseHtml;\n  return upstream;\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::addClasses": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "addClasses = (element, classes) => {\n    classes.split(',').forEach((c) => {\n      element.classList.add(toClassName(c.trim()));\n    });\n  }",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::buildBlock": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function buildBlock(blockName, content) {\n  const table = Array.isArray(content) ? content : [[content]];\n  const blockEl = document.createElement('div');\n  // build image block nested div structure\n  blockEl.classList.add(blockName);\n  table.forEach((row) => {\n    const rowEl = document.createElement('div');\n    row.forEach((col) => {\n      const colEl = document.createElement('div');\n      const vals = col.elems ? col.elems : [col];\n      vals.forEach((val) => {\n        if (val) {\n          if (typeof val === 'string') {\n            colEl.innerHTML += val;\n          } else {\n            colEl.appendChild(val);\n          }\n        }\n      });\n      rowEl.appendChild(colEl);\n    });\n    blockEl.appendChild(rowEl);\n  });\n  return (blockEl);\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::createOptimizedPicture": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function createOptimizedPicture(src, alt = '', eager = false, breakpoints = [{ media: '(min-width: 600px)', width: '2000' }, { width: '750' }]) {\n  const url = new URL(src, window.location.href);\n  const picture = document.createElement('picture');\n  const { pathname } = url;\n  const ext = pathname.substring(pathname.lastIndexOf('.') + 1);\n\n  // webp\n  breakpoints.forEach((br) => {\n    const source = document.createElement('source');\n    if (br.media) source.setAttribute('media', br.media);\n    source.setAttribute('type', 'image/webp');\n    source.setAttribute('srcset', `${pathname}?width=${br.width}&format=webply&optimize=medium`);\n    picture.appendChild(source);\n  });\n\n  // fallback\n  breakpoints.forEach((br, i) => {\n    if (i < breakpoints.length - 1) {\n      const source = document.createElement('source');\n      if (br.media) source.setAttribute('media', br.media);\n      source.setAttribute('srcset', `${pathname}?width=${br.width}&format=${ext}&optimize=medium`);\n      picture.appendChild(source);\n    } else {\n      const img = document.createElement('img');\n      img.setAttribute('loading', eager ? 'eager' : 'lazy');\n      img.setAttribute('alt', alt);\n      picture.appendChild(img);\n      img.setAttribute('src', `${pathname}?width=${br.width}&format=${ext}&optimize=medium`);\n    }\n  });\n\n  return picture;\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::decorateBlock": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function decorateBlock(block) {\n  const shortBlockName = block.classList[0];\n  if (shortBlockName) {\n    block.classList.add('block');\n    block.dataset.blockName = shortBlockName;\n    block.dataset.blockStatus = 'initialized';\n    const blockWrapper = block.parentElement;\n    blockWrapper.classList.add(`${shortBlockName}-wrapper`);\n    const section = block.closest('.section');\n    if (section) section.classList.add(`${shortBlockName}-container`);\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::decorateBlocks": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function decorateBlocks(main) {\n  main\n    .querySelectorAll('div.section > div > div')\n    .forEach(decorateBlock);\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::decorateButtons": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function decorateButtons(element) {\n  element.querySelectorAll('a').forEach((a) => {\n    a.title = a.title || a.textContent;\n    if (a.href !== a.textContent) {\n      const up = a.parentElement;\n      const twoup = a.parentElement.parentElement;\n      if (!a.querySelector('img')) {\n        if (up.childNodes.length === 1 && (up.tagName === 'P' || up.tagName === 'DIV')) {\n          a.className = 'button primary'; // default\n          up.classList.add('button-container');\n        }\n        if (up.childNodes.length === 1 && up.tagName === 'STRONG'\n          && twoup.childNodes.length === 1 && twoup.tagName === 'P') {\n          a.className = 'button primary';\n          twoup.classList.add('button-container');\n        }\n        if (up.childNodes.length === 1 && up.tagName === 'EM'\n          && twoup.childNodes.length === 1 && twoup.tagName === 'P') {\n          a.className = 'button secondary';\n          twoup.classList.add('button-container');\n        }\n      }\n    }\n  });\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::decorateIcons": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "async function decorateIcons(element) {\n  // Prepare the inline sprite\n  let svgSprite = document.getElementById('franklin-svg-sprite');\n  if (!svgSprite) {\n    const div = document.createElement('div');\n    div.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" id=\"franklin-svg-sprite\" style=\"display: none\"></svg>';\n    svgSprite = div.firstElementChild;\n    document.body.append(div.firstElementChild);\n  }\n\n  // Download all new icons\n  const icons = [...element.querySelectorAll('span.icon')];\n  await Promise.all(icons.map(async (span) => {\n    const iconName = Array.from(span.classList).find((c) => c.startsWith('icon-')).substring(5);\n    if (!ICONS_CACHE[iconName]) {\n      ICONS_CACHE[iconName] = true;\n      try {\n        const response = await fetch(`${window.hlx.codeBasePath}/icons/${iconName}.svg`);\n        if (!response.ok) {\n          ICONS_CACHE[iconName] = false;\n          return;\n        }\n        // Styled icons don't play nice with the sprite approach because of shadow dom isolation\n        const svg = await response.text();\n        if (svg.match(/(<style | class=)/)) {\n          ICONS_CACHE[iconName] = { styled: true, html: svg };\n        } else {\n          ICONS_CACHE[iconName] = {\n            html: svg\n              .replace('<svg', `<symbol id=\"icons-sprite-${iconName}\"`)\n              .replace(/ width=\".*?\"/, '')\n              .replace(/ height=\".*?\"/, '')\n              .replace('</svg>', '</symbol>'),\n          };\n        }\n      } catch (error) {\n        ICONS_CACHE[iconName] = false;\n        // eslint-disable-next-line no-console\n        console.error(error);\n      }\n    }\n  }));\n\n  const symbols = Object.values(ICONS_CACHE).filter((v) => !v.styled).map((v) => v.html).join('\\n');\n  svgSprite.innerHTML += symbols;\n\n  icons.forEach((span) => {\n    const iconName = Array.from(span.classList).find((c) => c.startsWith('icon-')).substring(5);\n    const parent = span.firstElementChild?.tagName === 'A' ? span.firstElementChild : span;\n    // Styled icons need to be inlined as-is, while unstyled ones can leverage the sprite\n    if (ICONS_CACHE[iconName].styled) {\n      parent.innerHTML = ICONS_CACHE[iconName].html;\n    } else {\n      parent.innerHTML = `<svg xmlns=\"http://www.w3.org/2000/svg\"><use href=\"#icons-sprite-${iconName}\"/></svg>`;\n    }\n  });\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::decorateSections": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function decorateSections(main) {\n  main.querySelectorAll(':scope > div').forEach((section) => {\n    const wrappers = [];\n    let defaultContent = false;\n    [...section.children].forEach((e) => {\n      if (e.tagName === 'DIV' || !defaultContent) {\n        const wrapper = document.createElement('div');\n        wrappers.push(wrapper);\n        defaultContent = e.tagName !== 'DIV';\n        if (defaultContent) wrapper.classList.add('default-content-wrapper');\n      }\n      wrappers[wrappers.length - 1].append(e);\n    });\n    wrappers.forEach((wrapper) => section.append(wrapper));\n    section.classList.add('section');\n    section.dataset.sectionStatus = 'initialized';\n    section.style.display = 'none';\n\n    /* process section metadata */\n    const sectionMeta = section.querySelector('div.section-metadata');\n    if (sectionMeta) {\n      const meta = readBlockConfig(sectionMeta);\n      Object.keys(meta).forEach((key) => {\n        if (key === 'style') {\n          const styles = meta.style.split(',').map((style) => toClassName(style.trim()));\n          styles.forEach((style) => section.classList.add(style));\n        } else {\n          section.dataset[toCamelCase(key)] = meta[key];\n        }\n      });\n      sectionMeta.parentNode.remove();\n    }\n  });\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::decorateTemplateAndTheme": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function decorateTemplateAndTheme() {\n  const addClasses = (element, classes) => {\n    classes.split(',').forEach((c) => {\n      element.classList.add(toClassName(c.trim()));\n    });\n  };\n  const template = getMetadata('template');\n  if (template) addClasses(document.body, template);\n  const theme = getMetadata('theme');\n  if (theme) addClasses(document.body, theme);\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::defer": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "defer = (fnname) => {\n    sampleRUM[fnname] = sampleRUM[fnname]\n      || ((...args) => sampleRUM.defer.push({ fnname, args }));\n  }",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::fetchPlaceholders": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "async function fetchPlaceholders(prefix = 'default') {\n  window.placeholders = window.placeholders || {};\n  const loaded = window.placeholders[`${prefix}-loaded`];\n  if (!loaded) {\n    window.placeholders[`${prefix}-loaded`] = new Promise((resolve, reject) => {\n      fetch(`${prefix === 'default' ? '' : prefix}/placeholders.json`)\n        .then((resp) => {\n          if (resp.ok) {\n            return resp.json();\n          }\n          throw new Error(`${resp.status}: ${resp.statusText}`);\n        }).then((json) => {\n          const placeholders = {};\n          json.data\n            .filter((placeholder) => placeholder.Key)\n            .forEach((placeholder) => {\n              placeholders[toCamelCase(placeholder.Key)] = placeholder.Text;\n            });\n          window.placeholders[prefix] = placeholders;\n          resolve();\n        }).catch((error) => {\n          // error loading placeholders\n          window.placeholders[prefix] = {};\n          reject(error);\n        });\n    });\n  }\n  await window.placeholders[`${prefix}-loaded`];\n  return window.placeholders[prefix];\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::getMetadata": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function getMetadata(name) {\n  const attr = name && name.includes(':') ? 'property' : 'name';\n  const meta = [...document.head.querySelectorAll(`meta[${attr}=\"${name}\"]`)].map((m) => m.content).join(', ');\n  return meta || '';\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::hashCode": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "hashCode = (s) => s.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0)",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::init": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function init() {\n  // customized to remove body hiding, hiding main instead\n  // document.body.style.display = 'none';\n  setup();\n  sampleRUM('top');\n\n  window.addEventListener('load', () => sampleRUM('load'));\n\n  window.addEventListener('unhandledrejection', (event) => {\n    sampleRUM('error', { source: event.reason.sourceURL, target: event.reason.line });\n  });\n\n  window.addEventListener('error', (event) => {\n    sampleRUM('error', { source: event.filename, target: event.lineno });\n  });\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::loadBlock": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "async function loadBlock(block) {\n  const status = block.dataset.blockStatus;\n  if (status !== 'loading' && status !== 'loaded') {\n    block.dataset.blockStatus = 'loading';\n    const { blockName } = block.dataset;\n    try {\n      const cssLoaded = new Promise((resolve) => {\n        loadCSS(`${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.css`, resolve);\n      });\n      const decorationComplete = new Promise((resolve) => {\n        (async () => {\n          try {\n            const mod = await import(`../blocks/${blockName}/${blockName}.js`);\n            if (mod.default) {\n              await mod.default(block);\n            }\n          } catch (error) {\n            // eslint-disable-next-line no-console\n            console.log(`failed to load module for ${blockName}`, error);\n          }\n          resolve();\n        })();\n      });\n      await Promise.all([cssLoaded, decorationComplete]);\n    } catch (error) {\n      // eslint-disable-next-line no-console\n      console.log(`failed to load block ${blockName}`, error);\n    }\n    block.dataset.blockStatus = 'loaded';\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::loadBlocks": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "async function loadBlocks(main) {\n  updateSectionsStatus(main);\n  const blocks = [...main.querySelectorAll('div.block')];\n  for (let i = 0; i < blocks.length; i += 1) {\n    // eslint-disable-next-line no-await-in-loop\n    await loadBlock(blocks[i]);\n    updateSectionsStatus(main);\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::loadCSS": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function loadCSS(href, callback) {\n  if (!document.querySelector(`head > link[href=\"${href}\"]`)) {\n    const link = document.createElement('link');\n    link.setAttribute('rel', 'stylesheet');\n    link.setAttribute('href', href);\n    if (typeof callback === 'function') {\n      link.onload = (e) => callback(e.type);\n      link.onerror = (e) => callback(e.type);\n    }\n    document.head.appendChild(link);\n  } else if (typeof callback === 'function') {\n    callback('noop');\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::loadFooter": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function loadFooter(footer) {\n  const footerBlock = buildBlock('footer', '');\n  footer.append(footerBlock);\n  decorateBlock(footerBlock);\n  return loadBlock(footerBlock);\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::loadHeader": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function loadHeader(header) {\n  const headerBlock = buildBlock('header', '');\n  header.append(headerBlock);\n  decorateBlock(headerBlock);\n  return loadBlock(headerBlock);\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::normalizeHeadings": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function normalizeHeadings(el, allowedHeadings) {\n  const allowed = allowedHeadings.map((h) => h.toLowerCase());\n  el.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((tag) => {\n    const h = tag.tagName.toLowerCase();\n    if (allowed.indexOf(h) === -1) {\n      // current heading is not in the allowed list -> try first to \"promote\" the heading\n      let level = parseInt(h.charAt(1), 10) - 1;\n      while (allowed.indexOf(`h${level}`) === -1 && level > 0) {\n        level -= 1;\n      }\n      if (level === 0) {\n        // did not find a match -> try to \"downgrade\" the heading\n        while (allowed.indexOf(`h${level}`) === -1 && level < 7) {\n          level += 1;\n        }\n      }\n      if (level !== 7) {\n        tag.outerHTML = `<h${level} id=\"${tag.id}\">${tag.textContent}</h${level}>`;\n      }\n    }\n  });\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::readBlockConfig": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function readBlockConfig(block) {\n  const config = {};\n  block.querySelectorAll(':scope > div').forEach((row) => {\n    if (row.children) {\n      const cols = [...row.children];\n      if (cols[1]) {\n        const col = cols[1];\n        const name = toClassName(cols[0].textContent);\n        let value = '';\n        if (col.querySelector('a')) {\n          const as = [...col.querySelectorAll('a')];\n          if (as.length === 1) {\n            value = as[0].href;\n          } else {\n            value = as.map((a) => a.href);\n          }\n        } else if (col.querySelector('img')) {\n          const imgs = [...col.querySelectorAll('img')];\n          if (imgs.length === 1) {\n            value = imgs[0].src;\n          } else {\n            value = imgs.map((img) => img.src);\n          }\n        } else if (col.querySelector('p')) {\n          const ps = [...col.querySelectorAll('p')];\n          if (ps.length === 1) {\n            value = ps[0].textContent;\n          } else {\n            value = ps.map((p) => p.textContent);\n          }\n        } else value = row.children[1].textContent;\n        config[name] = value;\n      }\n    }\n  });\n  return config;\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::sampleRUM": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function sampleRUM(checkpoint, data = {}) {\n  sampleRUM.defer = sampleRUM.defer || [];\n  const defer = (fnname) => {\n    sampleRUM[fnname] = sampleRUM[fnname]\n      || ((...args) => sampleRUM.defer.push({ fnname, args }));\n  };\n  sampleRUM.drain = sampleRUM.drain\n    || ((dfnname, fn) => {\n      sampleRUM[dfnname] = fn;\n      sampleRUM.defer\n        .filter(({ fnname }) => dfnname === fnname)\n        .forEach(({ fnname, args }) => sampleRUM[fnname](...args));\n    });\n  sampleRUM.on = (chkpnt, fn) => { sampleRUM.cases[chkpnt] = fn; };\n  defer('observe');\n  defer('cwv');\n  try {\n    window.hlx = window.hlx || {};\n    if (!window.hlx.rum) {\n      const usp = new URLSearchParams(window.location.search);\n      const weight = (usp.get('rum') === 'on') ? 1 : 100; // with parameter, weight is 1. Defaults to 100.\n      // eslint-disable-next-line no-bitwise\n      const hashCode = (s) => s.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0);\n      const id = `${hashCode(window.location.href)}-${new Date().getTime()}-${Math.random().toString(16).substr(2, 14)}`;\n      const random = Math.random();\n      const isSelected = (random * weight < 1);\n      const urlSanitizers = {\n        full: () => window.location.href,\n        origin: () => window.location.origin,\n        path: () => window.location.pathname,\n      };\n      // eslint-disable-next-line object-curly-newline, max-len\n      window.hlx.rum = { weight, id, random, isSelected, sampleRUM, sanitizeURL: urlSanitizers[window.hlx.RUM_MASK_URL || 'path'] };\n    }\n    const { weight, id } = window.hlx.rum;\n    if (window.hlx && window.hlx.rum && window.hlx.rum.isSelected) {\n      const sendPing = (pdata = data) => {\n        // eslint-disable-next-line object-curly-newline, max-len, no-use-before-define\n        const body = JSON.stringify({ weight, id, referer: window.hlx.rum.sanitizeURL(), checkpoint, ...data });\n        const url = `https://rum.hlx.page/.rum/${weight}`;\n        // eslint-disable-next-line no-unused-expressions\n        navigator.sendBeacon(url, body);\n        // eslint-disable-next-line no-console\n        console.debug(`ping:${checkpoint}`, pdata);\n      };\n      sampleRUM.cases = sampleRUM.cases || {\n        cwv: () => sampleRUM.cwv(data) || true,\n        lazy: () => {\n          // use classic script to avoid CORS issues\n          const script = document.createElement('script');\n          script.src = 'https://rum.hlx.page/.rum/@adobe/helix-rum-enhancer@^1/src/index.js';\n          document.head.appendChild(script);\n          return true;\n        },\n      };\n      sendPing(data);\n      if (sampleRUM.cases[checkpoint]) { sampleRUM.cases[checkpoint](); }\n    }\n  } catch (error) {\n    // something went wrong\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::sendPing": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "sendPing = (pdata = data) => {\n        // eslint-disable-next-line object-curly-newline, max-len, no-use-before-define\n        const body = JSON.stringify({ weight, id, referer: window.hlx.rum.sanitizeURL(), checkpoint, ...data });\n        const url = `https://rum.hlx.page/.rum/${weight}`;\n        // eslint-disable-next-line no-unused-expressions\n        navigator.sendBeacon(url, body);\n        // eslint-disable-next-line no-console\n        console.debug(`ping:${checkpoint}`, pdata);\n      }",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::setup": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function setup() {\n  window.hlx = window.hlx || {};\n  window.hlx.RUM_MASK_URL = 'full';\n  window.hlx.codeBasePath = '';\n  window.hlx.lighthouse = new URLSearchParams(window.location.search).get('lighthouse') === 'on';\n\n  const scriptEl = document.querySelector('script[src$=\"/scripts/scripts.js\"]');\n  if (scriptEl) {\n    try {\n      [window.hlx.codeBasePath] = new URL(scriptEl.src).pathname.split('/scripts/scripts.js');\n    } catch (error) {\n      // eslint-disable-next-line no-console\n      console.log(error);\n    }\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::toCamelCase": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function toCamelCase(name) {\n  return toClassName(name).replace(/-([a-z])/g, (g) => g[1].toUpperCase());\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::toClassName": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function toClassName(name) {\n  return typeof name === 'string'\n    ? name.toLowerCase().replace(/[^0-9a-z]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')\n    : '';\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::updateSectionsStatus": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "function updateSectionsStatus(main) {\n  const sections = [...main.querySelectorAll(':scope > div.section')];\n  for (let i = 0; i < sections.length; i += 1) {\n    const section = sections[i];\n    const status = section.dataset.sectionStatus;\n    if (status !== 'loaded') {\n      const loadingBlock = section.querySelector('.block[data-block-status=\"initialized\"], .block[data-block-status=\"loading\"]');\n      if (loadingBlock) {\n        section.dataset.sectionStatus = 'loading';\n        break;\n      } else {\n        section.dataset.sectionStatus = 'loaded';\n        section.style.display = null;\n      }\n    }\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/lib-franklin.js::waitForLCP": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/lib-franklin.js",
+            "merged_function": "async function waitForLCP(lcpBlocks) {\n  const block = document.querySelector('.block');\n  const hasLCPBlock = (block && lcpBlocks.includes(block.dataset.blockName));\n  if (hasLCPBlock) await loadBlock(block);\n\n  document.body.style.display = null;\n  const lcpCandidate = document.querySelector('main img');\n  await new Promise((resolve) => {\n    if (lcpCandidate && !lcpCandidate.complete) {\n      lcpCandidate.setAttribute('loading', 'eager');\n      lcpCandidate.addEventListener('load', resolve);\n      lcpCandidate.addEventListener('error', resolve);\n    } else {\n      resolve();\n    }\n  });\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::addFavIcon": {
+            "changes_after_merge": 1,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function addFavIcon(href) {\n  const link = document.createElement('link');\n  link.rel = 'icon';\n  link.type = 'image/x-icon';\n  link.href = href;\n  const existingLink = document.querySelector('head link[rel=\"icon\"]');\n  if (existingLink) {\n    existingLink.parentElement.replaceChild(link, existingLink);\n  } else {\n    document.getElementsByTagName('head')[0].appendChild(link);\n  }\n}",
+            "score": -0.47470092992561286
+        },
+        "scripts/scripts.js::addSidebarLayoutSectionsMetadata": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function addSidebarLayoutSectionsMetadata(section) {\n  const sectionMeta = section.firstChild;\n  if (sectionMeta) {\n    const meta = readBlockConfig(sectionMeta);\n    Object.keys(meta).forEach((key) => {\n      if (key === 'style') {\n        const styles = meta.style.split(',').map((style) => toClassName(style.trim()));\n        styles.forEach((style) => section.classList.add(style));\n      } else {\n        section.dataset[toCamelCase(key)] = meta[key];\n      }\n    });\n    // remove the metadata on sidebar-layout sections\n    if (section.querySelector('div').querySelector('div')) {\n      section.querySelector('div').querySelector('div').remove();\n    }\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::announcePageLoaded": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function announcePageLoaded(doc) {\n  const srPageMessage = doc.getElementById('sr-page-message');\n  if (!srPageMessage) {\n    loadScreenReaderMessage();\n  }\n  srPageMessage.textContent = `${doc.title} page load complete`;\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::appendEl": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "appendEl = (el) => {\n      if (el instanceof HTMLElement || el instanceof SVGElement) {\n        elem.append(el);\n      } else {\n        elem.insertAdjacentHTML('beforeend', el);\n      }\n    }",
+            "score": -1.0
+        },
+        "scripts/scripts.js::buildAccordions": {
+            "changes_after_merge": 7,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function buildAccordions(main) {\n  const accordions = main.querySelectorAll('.section.accordion');\n  accordions.forEach((accordion) => {\n    const content = accordion.querySelector('.default-content-wrapper');\n    const blockTable = [];\n    let row;\n    [...content.children].forEach((child) => {\n      if (child.nodeName === 'H2') {\n        if (row) {\n          blockTable.push([{ elems: row }]);\n        }\n        row = [];\n      }\n      row.push(child);\n    });\n    // add last row\n    if (row) {\n      blockTable.push([{ elems: row }]);\n    }\n\n    const block = buildBlock('accordion', blockTable);\n    content.append(block);\n    content.classList.remove('default-content-wrapper');\n  });\n}",
+            "score": 0.5758972102231612
+        },
+        "scripts/scripts.js::buildAutoBlocks": {
+            "changes_after_merge": 8,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function buildAutoBlocks(main) {\n  try {\n    buildHeroBlock(main);\n  } catch (error) {\n    // eslint-disable-next-line no-console\n    console.error('Auto Blocking failed', error);\n  }\n}",
+            "score": 0.6651586554631972
+        },
+        "scripts/scripts.js::buildBlogBylineBlock": {
+            "changes_after_merge": 1,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function buildBlogBylineBlock(main) {\n  const blogFeed = main.querySelector('.blog-feed:not(.mini)');\n  if (blogFeed && !main.classList.contains('sidekick-library')) {\n    const section = createElement('div');\n    const block = buildBlock('blog-byline', '');\n    section.append(block);\n    main.append(section);\n  } else if (document.body.classList.contains('blog')) {\n    // const section = main.querySelector('main > div:last-child');\n    const section = main.querySelector('h1');\n    section.insertAdjacentElement('afterend', buildBlock('blog-byline', ''));\n    // section.prepend(buildBlock('blog-byline', ''));\n    // section.insertAdjacentElement('afterend', buildBlock('blog-byline', ''));\n  }\n}",
+            "score": -0.47470092992561286
+        },
+        "scripts/scripts.js::buildBlogFormBlock": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "async function buildBlogFormBlock(main) {\n  if (document.body.classList.contains('blog')) {\n    const section = main.querySelector('main > div:last-child');\n    const fragment = buildBlock('blog-email-form', '');\n    section.append(fragment);\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::buildBlogSocialsBlock": {
+            "changes_after_merge": 2,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function buildBlogSocialsBlock(main) {\n  const blogFeed = main.querySelector('.blog-feed:not(.mini)');\n  if (!blogFeed && document.body.classList.contains('blog')) {\n    const section = document.createElement('div');\n    section.append(buildBlock('blog-socials', ''));\n    main.append(section);\n  }\n}",
+            "score": -0.1674206722684014
+        },
+        "scripts/scripts.js::buildBlogTopicsBlock": {
+            "changes_after_merge": 6,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function buildBlogTopicsBlock(main) {\n  const blogFeed = main.querySelector('.blog-feed:not(.mini)');\n  if (blogFeed) {\n    const section = document.createElement('div');\n    const block = buildBlock('blog-topics', '');\n    section.append(block);\n    main.append(section);\n  } else if (document.body.classList.contains('blog')) {\n    const section = main.querySelector('main > div:last-child');\n    section.prepend(buildBlock('blog-topics', ''));\n  }\n}",
+            "score": 0.47470092992561286
+        },
+        "scripts/scripts.js::buildBreadcrumbBlock": {
+            "changes_after_merge": 9,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function buildBreadcrumbBlock(main) {\n  const title = document.querySelector('head title');\n\n  if (title.innerText !== 'Elixir-Home' && window.isErrorPage !== true) {\n    const section = document.createElement('div');\n    section.append(buildBlock('breadcrumb', { elems: [] }));\n    main.prepend(section);\n  }\n}",
+            "score": 0.745005739098312
+        },
+        "scripts/scripts.js::buildHeroBlock": {
+            "changes_after_merge": 7,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function buildHeroBlock(main) {\n  const h1 = main.querySelector('h1');\n  const picture = main.querySelector('picture');\n  // eslint-disable-next-line no-bitwise\n  if (h1 && picture && (h1.compareDocumentPosition(picture) & Node.DOCUMENT_POSITION_PRECEDING)) {\n    const section = document.createElement('div');\n    section.append(buildBlock('hero', { elems: [picture, h1] }));\n    main.prepend(section);\n  }\n}",
+            "score": 0.5758972102231612
+        },
+        "scripts/scripts.js::buildNewsColumns": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function buildNewsColumns(main) {\n  if (!document.body.classList.contains('news')) {\n    return;\n  }\n\n  const h1 = main.querySelector('h1');\n  if (!h1) {\n    return;\n  }\n  const section = h1.closest('div');\n  const firstColElems = [];\n  const secondColElems = [];\n  let h1found = false;\n  [...section.children].forEach((elem) => {\n    if (elem === h1) {\n      h1found = true;\n    }\n\n    if (h1found) {\n      firstColElems.push(elem);\n    } else {\n      secondColElems.push(elem);\n    }\n  });\n  const columns = buildBlock('columns', [[{ elems: firstColElems }, { elems: secondColElems }]]);\n  columns.classList.add('thirds');\n  section.append(columns);\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::buildSectionAutoBlocks": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function buildSectionAutoBlocks(main) {\n  try {\n    buildAccordions(main);\n  } catch (error) {\n    // eslint-disable-next-line no-console\n    console.error('Section Auto Blocking failed', error);\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::buildSidebarLayout": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function buildSidebarLayout(main) {\n  const sidebarLayoutSectionContainers = main.querySelectorAll('.section.sidebar-layout > .section-container');\n\n  sidebarLayoutSectionContainers.forEach((sidebarLayoutSection) => {\n    // loop through all the blocks in the sidebar layout and move blocks in proper sub-section\n    const sidebarBlock = sidebarLayoutSection.querySelectorAll('.sidebar-wrapper')[0];\n    const primaryBlock = sidebarLayoutSection.querySelectorAll('.primary-wrapper')[0];\n    const sidebarIndex = Array.from(sidebarLayoutSection.children).indexOf(sidebarBlock);\n    const primaryIndex = Array.from(sidebarLayoutSection.children).indexOf(primaryBlock);\n    let populateSidebar = sidebarIndex < primaryIndex;\n\n    let i = 0;\n    while (i < sidebarLayoutSection.childNodes.length) {\n      const block = sidebarLayoutSection.childNodes[i];\n      if (block === sidebarBlock) {\n        populateSidebar = true;\n        addSidebarLayoutSectionsMetadata(block);\n        i += 1;\n      } else if (block === primaryBlock) {\n        populateSidebar = false;\n        addSidebarLayoutSectionsMetadata(block);\n        i += 1;\n      } else if (populateSidebar) {\n        sidebarBlock.firstChild.appendChild(block);\n      } else {\n        primaryBlock.firstChild.appendChild(block);\n      }\n    }\n  });\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::createElement": {
+            "changes_after_merge": 2,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function createElement(tagName, classes, props, html) {\n  const elem = document.createElement(tagName);\n  if (classes) {\n    const classesArr = (typeof classes === 'string') ? [classes] : classes;\n    elem.classList.add(...classesArr);\n  }\n  if (props) {\n    Object.keys(props).forEach((propName) => {\n      elem.setAttribute(propName, props[propName]);\n    });\n  }\n\n  if (html) {\n    if (html instanceof HTMLElement || html instanceof SVGElement) {\n      elem.append(html);\n    } else {\n      elem.insertAdjacentHTML('beforeend', html);\n    }\n  }\n\n  return elem;\n}",
+            "score": -0.1674206722684014
+        },
+        "scripts/scripts.js::createOptimizedPicture": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function createOptimizedPicture(src, alt = '', eager = false, breakpoints = [{ media: '(min-width: 600px)', width: '2000' }, { width: '750' }]) {\n  const url = new URL(src, getHref());\n  const picture = document.createElement('picture');\n  const { pathname } = url;\n  const ext = pathname.substring(pathname.lastIndexOf('.') + 1);\n\n  // webp\n  breakpoints.forEach((br) => {\n    const source = document.createElement('source');\n    if (br.media) source.setAttribute('media', br.media);\n    source.setAttribute('type', 'image/webp');\n    source.setAttribute('srcset', `${pathname}?width=${br.width}&format=webply&optimize=medium`);\n    picture.appendChild(source);\n  });\n\n  // fallback\n  breakpoints.forEach((br, i) => {\n    if (i < breakpoints.length - 1) {\n      const source = document.createElement('source');\n      if (br.media) source.setAttribute('media', br.media);\n      source.setAttribute('srcset', `${pathname}?width=${br.width}&format=${ext}&optimize=medium`);\n      picture.appendChild(source);\n    } else {\n      const img = document.createElement('img');\n      img.setAttribute('loading', eager ? 'eager' : 'lazy');\n      img.setAttribute('alt', alt);\n      picture.appendChild(img);\n      img.setAttribute('src', `${pathname}?width=${br.width}&format=${ext}&optimize=medium`);\n    }\n  });\n\n  return picture;\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::decorateBlocks": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function decorateBlocks(main) {\n  main\n    .querySelectorAll('div.section > div > div > div')\n    .forEach(decorateBlock);\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::decorateBlogImage": {
+            "changes_after_merge": 1,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function decorateBlogImage(main) {\n  if (!document.body.classList.contains('blog')) return;\n  main\n    .querySelectorAll('.default-content-wrapper picture')\n    .forEach((pic, i) => {\n      const parent = pic.parentNode;\n      if (i === 0) return; // hero image\n\n      const textContent = parent.innerText.replaceAll('\\n', '').trim();\n      // inline image\n      if (textContent.length !== 0 || parent.children.length > 1) {\n        parent.classList.add('blog-img-inline');\n        const link = pic.nextSibling;\n        // inline image with link (wrap image in link)\n        if (link && link.tagName === 'A' && link.textContent.includes(link.getAttribute('href'))) {\n          link.innerHTML = pic.outerHTML;\n          pic.replaceWith(link);\n        }\n      } else if (textContent.length === 0 && parent.children.length === 1) {\n        parent.classList.add('blog-img-center');\n      }\n    });\n}",
+            "score": -0.47470092992561286
+        },
+        "scripts/scripts.js::decorateLinks": {
+            "changes_after_merge": 10,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function decorateLinks(element) {\n  const hosts = ['localhost', 'hlx.page', 'hlx.live', ...PRODUCTION_DOMAINS];\n  element.querySelectorAll('a').forEach((a) => {\n    try {\n      if (a.href) {\n        const url = new URL(a.href);\n\n        // local links are relative\n        // non local links open in a new tab\n        const hostMatch = hosts.some((host) => url.hostname.includes(host));\n        if (hostMatch) {\n          a.href = `${url.pathname.replace('.html', '')}${url.search}${url.hash}`;\n        } else {\n          a.target = '_blank';\n        }\n      }\n    } catch (e) {\n      // something went wrong\n      // eslint-disable-next-line no-console\n      console.log(e);\n    }\n  });\n}",
+            "score": 0.8172362122561043
+        },
+        "scripts/scripts.js::decorateMain": {
+            "changes_after_merge": 13,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function decorateMain(main) {\n  // hopefully forward compatible button decoration\n  decorateButtons(main);\n  decorateIcons(main);\n  buildAutoBlocks(main);\n  decorateSections(main);\n  decorateSectionsExt(main);\n  decorateBlocks(main);\n}",
+            "score": 1.0
+        },
+        "scripts/scripts.js::decorateSectionsExt": {
+            "changes_after_merge": 1,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function decorateSectionsExt(main) {\n  main.querySelectorAll('.section').forEach((section) => {\n    const container = document.createElement('div');\n    container.classList.add('section-container');\n    [...section.children].forEach((child) => container.append(child));\n    section.append(container);\n  });\n}",
+            "score": -0.47470092992561286
+        },
+        "scripts/scripts.js::getDisplayFileTypeFromUrl": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function getDisplayFileTypeFromUrl(url) {\n  const displayFileTypes = ['pdf', 'docx'];\n  const urlExt = url.substring(url.lastIndexOf('.'));\n  const regex = new RegExp(`(${displayFileTypes.join('|')})`, 'g');\n\n  const fileTypeArr = urlExt.toLowerCase().match(regex);\n  return (fileTypeArr && fileTypeArr.length) ? fileTypeArr[0].toUpperCase() : null;\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::getHref": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function getHref() {\n  if (window.location.href !== 'about:srcdoc') return window.location.href;\n\n  const { location: parentLocation } = window.parent;\n  const urlParams = new URLSearchParams(parentLocation.search);\n  return `${parentLocation.origin}${urlParams.get('path')}`;\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::getOrigin": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function getOrigin() {\n  const { location } = window;\n  return location.href === 'about:srcdoc' ? window.parent.location.origin : location.origin;\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::loadDelayed": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function loadDelayed() {\n  // eslint-disable-next-line import/no-cycle\n  window.setTimeout(() => import('./delayed.js'), 3000);\n  // load anything that can be postponed to the latest here\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::loadEager": {
+            "changes_after_merge": 2,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "async function loadEager(doc) {\n  document.documentElement.lang = 'en';\n  decorateTemplateAndTheme();\n  const main = doc.querySelector('main');\n  if (main) {\n    decorateMain(main);\n    document.body.classList.add('appear');\n    await waitForLCP(LCP_BLOCKS);\n  }\n}",
+            "score": -0.1674206722684014
+        },
+        "scripts/scripts.js::loadLazy": {
+            "changes_after_merge": 4,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "async function loadLazy(doc) {\n  const main = doc.querySelector('main');\n  await loadBlocks(main);\n\n  const { hash } = window.location;\n  const element = hash ? doc.getElementById(hash.substring(1)) : false;\n  if (hash && element) element.scrollIntoView();\n\n  loadHeader(doc.querySelector('header'));\n  loadFooter(doc.querySelector('footer'));\n\n  loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);\n  addFavIcon(`${window.hlx.codeBasePath}/icons/favicon_icon.png`);\n  decorateLinks(main);\n  wrapImgsInLinks(main);\n\n  sampleRUM('lazy');\n  sampleRUM.observe(main.querySelectorAll('div[data-block-name]'));\n  sampleRUM.observe(main.querySelectorAll('picture > img'));\n}",
+            "score": 0.21970666902392466
+        },
+        "scripts/scripts.js::loadPage": {
+            "changes_after_merge": 3,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "async function loadPage() {\n  await loadEager(document);\n  await loadLazy(document);\n  loadDelayed();\n}",
+            "score": 0.050598140148774284
+        },
+        "scripts/scripts.js::loadScreenReaderMessage": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function loadScreenReaderMessage() {\n  let srPageMessage = document.getElementById('sr-page-message');\n  if (!srPageMessage) {\n    srPageMessage = createElement('div', 'sr-only', {\n      id: 'sr-page-message',\n      'aria-live': 'polite',\n    });\n    document.body.append(srPageMessage);\n  }\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::loadScript": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function loadScript(url, type, callback) {\n  const head = document.querySelector('head');\n  let script = head.querySelector(`script[src=\"${url}\"]`);\n  if (!script) {\n    script = document.createElement('script');\n    script.src = url;\n    if (type) script.setAttribute('type', type);\n    head.append(script);\n    script.onload = callback;\n    return script;\n  }\n  return script;\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::reDecorateButtons": {
+            "changes_after_merge": 0,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function reDecorateButtons(element) {\n  element.querySelectorAll('a').forEach((a) => {\n    // remove redundant titles\n    if (a.title === a.textContent) {\n      a.title = '';\n    }\n  });\n}",
+            "score": -1.0
+        },
+        "scripts/scripts.js::wrapImgsInLinks": {
+            "changes_after_merge": 2,
+            "file_path": "scripts/scripts.js",
+            "merged_function": "function wrapImgsInLinks(container) {\n  const pictures = container.querySelectorAll('p picture');\n  pictures.forEach((pic) => {\n    const parent = pic.parentNode;\n    const link = parent.nextElementSibling.querySelector('a');\n    if (link && link.textContent.includes(link.getAttribute('href'))) {\n      link.parentElement.remove();\n      link.innerHTML = pic.outerHTML;\n      parent.replaceWith(link);\n    }\n  });\n}",
+            "score": -0.1674206722684014
+        }
+    }
+}

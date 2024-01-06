@@ -1,5 +1,6 @@
 .env
-function_changes.json
+testing.json
+training.json
 test_function_changes.json
 package-lock.json
 path

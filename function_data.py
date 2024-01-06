@@ -5,9 +5,9 @@ import time
 import subprocess
 
 def get_function_data(repo_path='../inputData/testRepo'):
-    output_file = 'outputData/test_function_changes.json' if repo_path.endswith('testRepo') else 'outputData/function_changes.json'
     script_dir = os.path.dirname(os.path.abspath(__file__))
     repo_path = os.path.join(script_dir, repo_path)
+    repo_name = os.path.basename(repo_path)  # Extract the repository name
     repo = git.Repo(repo_path)
 
     repo.git.checkout('main')
@@ -87,22 +87,6 @@ def get_function_data(repo_path='../inputData/testRepo'):
             print(f"Error processing AST: {e}")
         return functions
     
-    def normalize_change_counts(functions):
-        # Find the min and max changes after merge
-        min_changes = min(functions.values(), key=lambda x: x['changes_after_merge'])['changes_after_merge']
-        max_changes = max(functions.values(), key=lambda x: x['changes_after_merge'])['changes_after_merge']
-
-        # Normalize the change counts between -1 and 1
-        for func_key, func_info in functions.items():
-            if max_changes != min_changes:
-                normalized_score = 2 * ((func_info['changes_after_merge'] - min_changes) / (max_changes - min_changes)) - 1
-            else:
-                normalized_score = 0
-            func_info['score'] = normalized_score
-
-        return functions
-
-
     def get_full_function_at_commit(repo, commit_hash, function_name, file_path):
         commit = repo.commit(commit_hash)
         blob = commit.tree / file_path
@@ -152,10 +136,8 @@ def get_function_data(repo_path='../inputData/testRepo'):
 
     functions = {}
 
-
-
-
     for commit in merge_commits:
+        print(f"Processing merge commit {commit.hexsha}")
         for file_path in commit.stats.files:
             if file_path.endswith('.js'):
                 try:
@@ -180,6 +162,7 @@ def get_function_data(repo_path='../inputData/testRepo'):
                         continue
 
     for commit in repo.iter_commits('main', reverse=True):  # Iterate from the oldest to newest commit
+        print(f"Processing commit {commit.hexsha}")
         for file_path in commit.stats.files:
             if file_path.endswith('.js'):
                 try:
@@ -198,16 +181,22 @@ def get_function_data(repo_path='../inputData/testRepo'):
                     print(f"Error processing commit {commit.hexsha}: {e}")
                     continue
 
-    # Normalize the change counts to a score between -1 and 1
-    functions = normalize_change_counts(functions)
 
     # Convert datetime objects to string before saving
     for func in functions.values():
         func['time_first_merged'] = func['time_first_merged'].isoformat()
 
-    # Save the functions and their change counts and normalized scores into a file
-    with open(output_file, 'w') as f:
-        json.dump(functions, f, indent=4)
+    # Filtered data structured by repository
+    repo_data = {repo_name: {}}
+    for func_key, func_info in functions.items():
+        repo_data[repo_name][func_key] = {
+            'changes_after_merge': func_info['changes_after_merge'],
+            'file_path': func_info['file_path'],
+            'function_name': func_info['function_name'],   
+            'merged_function': func_info['merged_function'],
+        }
+
+    return repo_data
 
 if __name__ == '__main__':
     start_time = time.time()
