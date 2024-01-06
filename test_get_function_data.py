@@ -3,14 +3,14 @@ import json
 import sys
 
 sys.path.append('../')
-import getFunctionData
+import function_data
 
 class TestFunctionData(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         # Execute the script to update the function data
-        getFunctionData.get_function_data()
+        function_data.get_function_data()
 
         # Load the function changes data
         with open('./outputData/test_function_changes.json', 'r') as file:

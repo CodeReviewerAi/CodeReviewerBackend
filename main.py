@@ -1,13 +1,13 @@
 import unittest
 import time
 import test_get_function_data
-import getFunctionData
+import function_data
 import createEmbeddings
 from userInput import processUserInput
 
 def main(repo_path='../inputData/testRepo'):
     # Run the main function from getFunctionData
-    getFunctionData.get_function_data(repo_path)
+    function_data.get_function_data(repo_path)
     
     # Remeber to normalize the scores for the jsons created by getFunctionData
     
