@@ -79,7 +79,3 @@ def embed_repos_functions(json_data):
             if attempt == max_attempts:
                 print(f"Failed to process '{function_key}' from '{repo_name}' after {max_attempts} attempts.")
 
-with open('dataForTesting/training.json', 'r') as f:
-    data = json.load(f)
-
-embed_repos_functions(data)

@@ -1,5 +1,5 @@
 import json
-from processUserInput import process_user_input  
+from userInput.process_user_input import process_user_input  
 
 def evaluate_model_accuracy(test_data_path, merge_threshold=-0.6):
     with open(test_data_path, 'r') as file:
@@ -33,6 +33,6 @@ def evaluate_model_accuracy(test_data_path, merge_threshold=-0.6):
     return accuracy, baseline_accuracy
 
 if __name__ == '__main__':
-    accuracy, baseline_accuracy = evaluate_model_accuracy('../dataForTesting/testing.json')
+    accuracy, baseline_accuracy = evaluate_model_accuracy('./dataForTesting/testing.json')
     print(f"Model Accuracy: {accuracy * 100:.2f}%")
     print(f"Baseline Accuracy: {baseline_accuracy * 100:.2f}%")

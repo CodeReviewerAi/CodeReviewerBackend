@@ -1,9 +1,10 @@
-import unittest
 import time
 import json
-import test_get_function_data
 import function_data
-#from userInput import evaluate_performance
+import normalize_scores
+import embed_training_data
+import evaluate_performance
+from userInput.process_user_input import process_user_input 
 
 def main(repos_info):
     for repo_info in repos_info:
@@ -16,37 +17,43 @@ def main(repos_info):
         # Output paths based on data type
         if data_type == 'training':
             output_path = './dataForTesting/training.json'
-        elif data_type == 'testing':
-            output_path = './dataForTesting/testing.json'
         else:  # Default to test
-            output_path = './dataForTesting/test_function_changes.json'
+            output_path = './dataForTesting/testing.json'
 
         # Save function data to the appropriate file
         with open(output_path, 'w') as f:
             json.dump(function_data_output, f, indent=4)
 
-    # Normalize the scores
-    
+    # Normalize the scores for all data
+    normalize_scores.normalize_and_save_change_counts('dataForTesting/training.json')
+    normalize_scores.normalize_and_save_change_counts('dataForTesting/testing.json')
+    print("Done normalizing scores")
+   
+    # Load the function data from the file
+    with open('dataForTesting/training.json', 'r') as f:
+        training_data = json.load(f)
+
     # Save the embeddings
+    embed_training_data.embed_repos_functions(training_data)
+    
+    # Get the performance metrics
+    accuracy, baseline_accuracy = evaluate_performance.evaluate_model_accuracy('./dataForTesting/testing.json')
+    print(f"Model Accuracy: {accuracy * 100:.2f}%")
+    print(f"Baseline Accuracy: {baseline_accuracy * 100:.2f}%")
 
-    # Run the main function from processUserInput
-    #evaluate_performance.main()
-
-    # Create a test suite
-    suite = unittest.TestLoader().loadTestsFromModule(test_get_function_data)
-
-    # Run the tests with CustomTestRunner
-    test_get_function_data.CustomTestRunner().run(suite)
-
-if __name__ == '__main__':
+if __name__ == '__main__':    
     start_time = time.time()
 
     # List of repositories and their types
     repos_info = [
-        {'path': '../inputData/testRepo', 'type': 'test'},
-        # Add more repos here as needed, e.g.:
-        # {'path': '../inputData/elixirsolutions', 'type': 'training'},
-        # {'path': '../inputData/anotherRepo', 'type': 'testing'}
+        {'path': '../inputData/trainingData/24petwatch', 'type': 'training'},
+        {'path': '../inputData/trainingData/danaher-ls-aem', 'type': 'training'},
+        {'path': '../inputData/trainingData/mammotome', 'type': 'training'},
+        {'path': '../inputData/trainingData/moleculardevices', 'type': 'training'},
+        {'path': '../inputData/trainingData/petplace', 'type': 'training'},
+        {'path': '../inputData/trainingData/theplayers', 'type': 'training'},
+        {'path': '../inputData/trainingData/walgreens', 'type': 'training'},
+        {'path': '../inputData/testData/elixirsolutions', 'type': 'testing'},
     ]
 
     main(repos_info)
