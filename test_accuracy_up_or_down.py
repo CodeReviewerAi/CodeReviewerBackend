@@ -1,5 +1,6 @@
 import subprocess
 import re
+import sys
 
 # ANSI escape codes for colors
 GREEN = '\033[92m'  # Green text
@@ -38,3 +39,4 @@ if __name__ == '__main__':
         print(GREEN + "Test passed: Accuracy has been increased! 🎉" + ENDC)
     else:
         print(RED + "Test failed: Accuracy has not been increased or no accuracy update was found. 😢" + ENDC)
+        sys.exit(1)  # Exit with a non-zero status code to indicate failure
