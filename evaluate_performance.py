@@ -32,7 +32,18 @@ def evaluate_model_accuracy(test_data_path, merge_threshold=-0.6):
 
     return accuracy, baseline_accuracy
 
+def update_readme_with_accuracy(accuracy):
+    with open('README.md', 'r') as file:
+        lines = file.readlines()
+
+    for i, line in enumerate(lines):
+        if '## Current Accuracy:' in line:
+            lines[i] = f'## Current Accuracy: {accuracy:.2f}%\n'
+
+    with open('README.md', 'w') as file:
+        file.writelines(lines)
+
 if __name__ == '__main__':
-    accuracy, baseline_accuracy = evaluate_model_accuracy('./dataForTesting/testing.json')
-    print(f"Model Accuracy: {accuracy * 100:.2f}%")
-    print(f"Baseline Accuracy: {baseline_accuracy * 100:.2f}%")
+    accuracy = evaluate_model_accuracy('./dataForTesting/testing.json')
+    print(f"Current Accuracy: {accuracy * 100:.2f}%")
+    update_readme_with_accuracy(accuracy * 100)

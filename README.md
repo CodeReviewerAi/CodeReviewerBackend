@@ -1,7 +1,7 @@
 # What is CodeReviewer?
 CodeReviewer is a tool that uses machine learning to help developers reviewing code. It is trained on a dataset of code from the [hlxsites](https://github.com/hlxsites) repositories and is able to predict how likely a given function is going to break in the future.
 
-## Current Accuracy: 73.28%
+## Current Accuracy: 73.29%
 
 ## How does it work?
 We save each functions first version(When it was first merged) and how often it was changed in the future. We then use this data to create embeddings for each function. We then use these embeddings to create a database using Qdrant. 
