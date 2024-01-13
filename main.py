@@ -10,19 +10,16 @@ def main(repos_info):
     for repo_info in repos_info:
         repo_path, data_type = repo_info['path'], repo_info['type']
         
-        # Run the main function from getFunctionData
-        print(f"Processing repository: {repo_path}, Data type: {data_type}")
-        function_data_output = function_data.get_function_data(repo_path)
-
-        # Output paths based on data type
+        # Determine the output path based on data type
         if data_type == 'training':
             output_path = './dataForTesting/training.json'
         else:  # Default to test
             output_path = './dataForTesting/testing.json'
 
-        # Save function data to the appropriate file
-        with open(output_path, 'w') as f:
-            json.dump(function_data_output, f, indent=4)
+        # Run the main function from getFunctionData with the specified output path
+        print(f"Processing repository: {repo_path}, Data type: {data_type}")
+        function_data.get_function_data(repo_path, output_path)
+        print(f"Done processing repository: {repo_path}, Data type: {data_type}")
 
     # Normalize the scores for all data
     normalize_scores.normalize_and_save_change_counts('dataForTesting/training.json')
@@ -47,12 +44,12 @@ if __name__ == '__main__':
     # List of repositories and their types
     repos_info = [
         {'path': '../inputData/trainingData/24petwatch', 'type': 'training'},
-        {'path': '../inputData/trainingData/danaher-ls-aem', 'type': 'training'},
-        {'path': '../inputData/trainingData/mammotome', 'type': 'training'},
-        {'path': '../inputData/trainingData/moleculardevices', 'type': 'training'},
-        {'path': '../inputData/trainingData/petplace', 'type': 'training'},
-        {'path': '../inputData/trainingData/theplayers', 'type': 'training'},
-        {'path': '../inputData/trainingData/walgreens', 'type': 'training'},
+        #{'path': '../inputData/trainingData/danaher-ls-aem', 'type': 'training'},
+        #{'path': '../inputData/trainingData/mammotome', 'type': 'training'},
+        #{'path': '../inputData/trainingData/moleculardevices', 'type': 'training'},
+        #{'path': '../inputData/trainingData/petplace', 'type': 'training'},
+        #{'path': '../inputData/trainingData/theplayers', 'type': 'training'},
+        #{'path': '../inputData/trainingData/walgreens', 'type': 'training'},
         {'path': '../inputData/testData/elixirsolutions', 'type': 'testing'},
     ]
 

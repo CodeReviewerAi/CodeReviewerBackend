@@ -4,7 +4,7 @@ import json
 import time
 import subprocess
 
-def get_function_data(repo_path='../inputData/testRepo'):
+def get_function_data(repo_path='../inputData/testRepo', output_path='./dataForTesting/test_function_changes.json'):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     repo_path = os.path.join(script_dir, repo_path)
     repo_name = os.path.basename(repo_path)  # Extract the repository name
@@ -196,7 +196,9 @@ def get_function_data(repo_path='../inputData/testRepo'):
             'merged_function': func_info['merged_function'],
         }
 
-    return repo_data
+    # Save to the specified output path
+    with open(output_path, 'w') as f:
+        json.dump(repo_data, f, indent=4)
 
 if __name__ == '__main__':
     start_time = time.time()

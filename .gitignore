@@ -1,6 +1,4 @@
 .env
-testing.json
-training.json
 test_function_changes.json
 package-lock.json
 path
@@ -8,3 +6,5 @@ path
 **/__pycache__
 node_modules
 temp.js
+testing.json
+dataForTesting/
