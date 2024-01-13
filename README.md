@@ -20,7 +20,7 @@
 - clone this [repository](https://github.com/RapidReview-ai/testRepo) into the 'inputData' folder. 
 
 ## Running the app
-- Enter the function you want to test into the inputFunction.json file inside of the userInput folder.
+- Enter the functions you want to test on in the testing.json file. And run evaluate_performance.py to see how well the model performs.
 - Inside of main.py you can pass the repo_path variable to the get_function_data function to change the training data.
 - run `python main.py` to run the whole app including, getting the data from the git repo, generating embeddings, creating the database, and running the query.
     - If you only want to run one of these steps, run the corresponding file on their own.
