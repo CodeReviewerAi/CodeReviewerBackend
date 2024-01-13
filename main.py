@@ -37,6 +37,7 @@ def main(repos_info):
     accuracy, baseline_accuracy = evaluate_performance.evaluate_model_accuracy('./dataForTesting/testing.json')
     print(f"Model Accuracy: {accuracy * 100:.2f}%")
     print(f"Baseline Accuracy: {baseline_accuracy * 100:.2f}%")
+    evaluate_performance.update_readme_with_accuracy(accuracy * 100)
 
 if __name__ == '__main__':    
     start_time = time.time()
