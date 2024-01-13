@@ -10,7 +10,7 @@ class TestFunctionData(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Execute the script to update the function data
-        function_data.get_function_data()
+        function_data.get_function_data(output_path='./dataForTesting/test_function_changes.json')
 
         # Load the function changes data
         with open('./dataForTesting/test_function_changes.json', 'r') as file:
